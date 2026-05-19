@@ -314,7 +314,6 @@ public class CalendarActivity extends BaseActivity {
     }
 
     private void buildDayDialog(String date, int day, List<FoodLog> logs) {
-        // 🔹 Получаем акцентный цвет один раз
         String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
         int accentColor = android.graphics.Color.parseColor(accentHex);
 
@@ -325,7 +324,6 @@ public class CalendarActivity extends BaseActivity {
                     .setPositiveButton("Закрыть", null)
                     .create();
             dialog.show();
-            // 🔹 Красим кнопку закрытия
             try { dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor); } catch (Exception ignored) {}
             return;
         }
@@ -351,7 +349,6 @@ public class CalendarActivity extends BaseActivity {
                 "Калории: %d ккал\n\nБелки: %d г | Жиры: %d г | Углеводы: %d г\nСахар: %d г | Клетчатка: %d г",
                 totalCal, pro, fat, carb, sugar, fiber));
         sum.setTextSize(14);
-        // 🔹 Прямое применение акцента (теги не нужны в диалогах)
         sum.setTextColor(accentColor);
         sum.setPadding(0,0,0,24); sum.setGravity(Gravity.CENTER); sum.setTypeface(null, android.graphics.Typeface.BOLD); content.addView(sum);
 
@@ -373,7 +370,6 @@ public class CalendarActivity extends BaseActivity {
 
                 TextView tot = new TextView(this); tot.setText("Итого: "+mc+" ккал"); tot.setTextSize(13);
                 tot.setTypeface(null, android.graphics.Typeface.BOLD);
-                // 🔹 Прямое применение акцента
                 tot.setTextColor(accentColor);
                 tot.setPadding(12,6,12,12); tot.setGravity(Gravity.END); content.addView(tot);
 
@@ -385,7 +381,6 @@ public class CalendarActivity extends BaseActivity {
 
         AlertDialog dialog = new AlertDialog.Builder(this).setView(sv).setPositiveButton("Закрыть", null).create();
         dialog.show();
-        // 🔹 Красим кнопку закрытия
         try { dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor); } catch (Exception ignored) {}
     }
 }
