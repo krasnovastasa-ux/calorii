@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.content.Intent;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Gravity;
@@ -73,16 +75,24 @@ public class WaterTrackerActivity extends BaseActivity {
     private void setupBottomNavigation() {
         BottomNavigationView bottomNav = binding.bottomNavigation;
         bottomNav.setSelectedItemId(R.id.nav_water);
+
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.nav_water) {
+
                 return true;
             } else if (id == R.id.nav_food) {
+
                 startActivity(new Intent(this, MainActivity.class));
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 return true;
             } else if (id == R.id.nav_diets) {
                 startActivity(new Intent(this, DietListActivity.class));
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                return true;
+            } else if (id == R.id.nav_weight) {
+                startActivity(new Intent(this, WeightTrackerActivity.class));
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 return true;
             }

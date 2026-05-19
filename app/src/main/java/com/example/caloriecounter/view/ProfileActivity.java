@@ -8,16 +8,24 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ArrayAdapter;
+import android.os.Build;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatDelegate;
+import android.annotation.SuppressLint;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import com.example.caloriecounter.R;
 import com.example.caloriecounter.databinding.ActivityProfileBinding;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import com.example.caloriecounter.viewmodel.ProfileViewModel;
 
 public class ProfileActivity extends BaseActivity {
+
     private ActivityProfileBinding binding;
     private ProfileViewModel viewModel;
     private SharedPreferences prefs;
@@ -32,6 +40,12 @@ public class ProfileActivity extends BaseActivity {
     private String selectedTheme = "system";
     private String selectedAccent = "#6C63FF";
     private View selectedAccentView;
+    private final BroadcastReceiver weightUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            viewModel.loadProfile(userId);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +81,30 @@ public class ProfileActivity extends BaseActivity {
         setupObservers();
         setupClicks();
         applyThemeAndAccent();
+        applyThemeAndAccent();
+        registerWeightUpdateReceiver();
     }
+
+    @SuppressLint("UnprotectedRegisterReceiver")
+    private void registerWeightUpdateReceiver() {
+        androidx.core.content.ContextCompat.registerReceiver(
+                this,
+                weightUpdateReceiver,
+                new IntentFilter("com.example.caloriecounter.WEIGHT_UPDATED"),
+                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        );
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (userId != null && !userId.isEmpty()) {
+            viewModel.loadProfile(userId);
+        }
+    }
+
 
     private void setupSpinners() {
         ArrayAdapter<String> g = new ArrayAdapter<>(this,
@@ -316,4 +353,10 @@ public class ProfileActivity extends BaseActivity {
         }
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(weightUpdateReceiver);
+    }
 }

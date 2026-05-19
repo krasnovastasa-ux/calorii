@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.caloriecounter"
-        minSdk 24
+        minSdkVersion 26
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -19,6 +19,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -38,6 +39,9 @@ dependencies {
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation "com.google.android.material:material:1.9.0"
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
 
     // Retrofit + Gson
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'

@@ -107,4 +107,24 @@ public interface SupabaseApi {
     Call<List<Diet>> getDietById(@Query("id") String id);
     @GET("rest/v1/diets")
     Call<List<Diet>> getDietsByGoal(@Query("goal") String goalFilter);
+
+
+    // вес
+    @GET("rest/v1/weight_logs")
+    Call<List<WeightLog>> getWeightLogs(
+            @Header("Authorization") String token,
+            @Query("user_id") String userIdFilter,
+            @Query("log_date") String dateFilter
+    );
+
+    @POST("rest/v1/weight_logs")
+    Call<Void> addWeightLog(
+            @Header("Authorization") String token,
+            @Header("Prefer") String prefer,
+            @Body WeightLog log);
+
+    @DELETE("rest/v1/weight_logs")
+    Call<Void> deleteWeightLog(
+            @Header("Authorization") String token,
+            @Query("id") String logId);
 }

@@ -25,8 +25,6 @@
         android:theme="@style/Theme.CalorieCounter"
         android:usesCleartextTraffic="true">
 
-
-        <!-- Лаунчер (единственная с intent-filter) -->
         <activity
             android:name=".view.LoginActivity"
             android:exported="true">
@@ -59,6 +57,11 @@
         <!--  напоминания воды -->
         <receiver android:name=".view.WaterReminderReceiver" android:exported="false" />
 
+        <activity
+            android:name=".view.WeightTrackerActivity"
+            android:label="Трекер веса"
+            android:theme="@style/Theme.CalorieCounter"
+            android:windowSoftInputMode="adjustResize" />
 
     </application>
 </manifest>

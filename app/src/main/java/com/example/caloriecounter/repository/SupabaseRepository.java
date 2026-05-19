@@ -645,4 +645,55 @@ public class SupabaseRepository {
             }
         });
     }
+
+
+    public interface WeightLogListCallback { void onSuccess(List<WeightLog> logs); void onError(String message); }
+
+    public void fetchWeightLogs(String userId, WeightLogListCallback cb) {
+        String token = prefs.getString("token", null);
+        if (token == null || userId == null) { cb.onError("Нет сессии"); return; }
+
+        api.getWeightLogs("Bearer " + token, "eq." + userId, null)
+                .enqueue(new Callback<List<WeightLog>>() {
+                    @Override public void onResponse(Call<List<WeightLog>> call, Response<List<WeightLog>> r) {
+                        if (handleTokenError(r, cb)) return;
+                        if (r.isSuccessful() && r.body() != null) cb.onSuccess(r.body());
+                        else cb.onError(parseError(r));
+                    }
+                    @Override public void onFailure(Call<List<WeightLog>> call, Throwable t) {
+                        cb.onError("Сеть: " + t.getMessage());
+                    }
+                });
+    }
+
+    public void saveOrUpdateWeightLog(String userId, double weight, String date, VoidCallback cb) {
+        String token = prefs.getString("token", null);
+        if (token == null) { cb.onError("Нет сессии"); return; }
+        WeightLog log = new WeightLog();
+        log.userId = userId; log.weight = weight; log.logDate = date;
+
+        api.addWeightLog("Bearer " + token, "resolution=merge-duplicates", log).enqueue(new retrofit2.Callback<Void>() {
+            @Override public void onResponse(Call<Void> call, Response<Void> r) {
+                if (r.isSuccessful() || r.code() == 201 || r.code() == 204 || r.code() == 409) cb.onSuccess();
+                else cb.onError(parseError(r));
+            }
+            @Override public void onFailure(Call<Void> call, Throwable t) { cb.onError("Сеть: " + t.getMessage()); }
+        });
+    }
+
+    public void updateProfileWeight(String userId, double weight, VoidCallback cb) {
+        String token = prefs.getString("token", null);
+        if (token == null) { cb.onError("Нет сессии"); return; }
+        ProfileData update = new ProfileData();
+        update.id = userId; update.userId = userId; update.weight = (int)Math.round(weight);
+        api.createProfile("Bearer " + token, "resolution=merge-duplicates", update).enqueue(new retrofit2.Callback<Void>() {
+            @Override public void onResponse(Call<Void> call, Response<Void> r) {
+                if (r.isSuccessful() || r.code() == 200 || r.code() == 204) {
+                    prefs.edit().putInt("weight", (int)Math.round(weight)).apply();
+                    cb.onSuccess();
+                } else cb.onError(parseError(r));
+            }
+            @Override public void onFailure(Call<Void> call, Throwable t) { cb.onError("Сеть: " + t.getMessage()); }
+        });
+    }
 }

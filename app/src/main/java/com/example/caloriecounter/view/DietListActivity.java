@@ -57,6 +57,10 @@ public class DietListActivity extends BaseActivity {
                 return true;
             } else if (id == R.id.nav_diets) {
                 return true;
+            }else if (id == R.id.nav_weight) {
+                startActivity(new Intent(this, WeightTrackerActivity.class));
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                return true;
             }
             return false;
         });

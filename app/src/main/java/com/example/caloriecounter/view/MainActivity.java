@@ -5,6 +5,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.IntentFilter;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -58,10 +61,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        vm.refresh();
         vm.refreshTargets();
-        renderWeek();
-
     }
 
     private void setupBottomNavigation() {
@@ -77,6 +77,11 @@ public class MainActivity extends BaseActivity {
                 return true;
             } else if (id == R.id.nav_water) {
                 startActivity(new Intent(this, WaterTrackerActivity.class));
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                return true;
+            }
+            else if (id == R.id.nav_weight) {
+                startActivity(new Intent(this, WeightTrackerActivity.class));
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 return true;
             }
