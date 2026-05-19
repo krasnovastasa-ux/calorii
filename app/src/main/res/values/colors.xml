@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ✅ ТВОИ ОСНОВНЫЕ ЦВЕТА (сохранены точно как были) -->
     <color name="primary">#6C63FF</color>
     <color name="primary_dark">#5A52D5</color>
     <color name="primary_light">#8B83FF</color>
@@ -12,10 +11,8 @@
     <color name="error">#FF6B6B</color>
     <color name="error_color">#FFD32F2F</color>
 
-    <!-- ✅ ДОБАВЛЕНО: для логики прогресса (70%/100%) -->
-    <color name="warning">#FFA000</color>           <!-- Оранжевый для 70-99% -->
-    <color name="danger">#D32F2F</color>            <!-- Красный для ≥100% -->
+    <color name="warning">#FFA000</color>
+    <color name="danger">#D32F2F</color>
 
-    <!-- ✅ ДОБАВЛЕНО: чёрный для текста БЖУ по умолчанию -->
-    <color name="text_default">#000000</color>      <!-- Чёрный по умолчанию -->
+    <color name="text_default">#000000</color>
 </resources>

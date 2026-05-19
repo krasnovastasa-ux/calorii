@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg_primary">
 
-    <!-- 🔔 Кнопка уведомлений -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnReminderSettings"
         android:layout_width="40dp"
@@ -20,9 +19,8 @@
         android:padding="0dp"
         app:iconPadding="0dp"
         app:elevation="0dp"
-        android:alpha="0.9"/>
+        android:alpha="0.9" />
 
-    <!-- ✅ ScrollView с контентом (заканчивается НАД панелью) -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,21 +35,20 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- 📅 Кружки недели -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:scrollbars="none">
+
                 <LinearLayout
                     android:id="@+id/weekContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center"/>
+                    android:gravity="center" />
             </HorizontalScrollView>
 
-            <!-- ✅ Кнопка "Сегодня" -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnToday"
                 android:layout_width="wrap_content"
@@ -67,18 +64,19 @@
                 app:cornerRadius="24dp"
                 app:strokeWidth="1.5dp"
                 app:strokeColor="@color/primary"
-                android:textColor="@color/primary"/>
+                android:textColor="@color/primary" />
 
-            <!-- 📊 Статистика -->
             <TextView
                 android:id="@+id/tvConsumed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Выпито: 0 мл"
+                android:tag="accent"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center" />
+
             <TextView
                 android:id="@+id/tvRemaining"
                 android:layout_width="wrap_content"
@@ -87,24 +85,23 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_secondary"
                 android:layout_gravity="center"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="12dp" />
 
-            <!-- 💧 Ввод -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusTopStart="12dp"
                 android:hint="Сколько выпили (мл)">
+
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:textAlignment="center"/>
+                    android:textAlignment="center" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ➕ Кнопка добавить -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddWater"
                 android:layout_width="match_parent"
@@ -113,16 +110,16 @@
                 android:backgroundTint="@color/primary"
                 app:cornerRadius="22dp"
                 android:layout_marginTop="6dp"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="10dp" />
 
-            <!-- 📋 Список записей -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Записи за день:"
                 android:textSize="13sp"
                 android:textColor="@color/text_secondary"
-                android:layout_marginBottom="6dp"/>
+                android:layout_marginBottom="6dp" />
+
             <LinearLayout
                 android:id="@+id/llTodayLogs"
                 android:layout_width="match_parent"
@@ -131,12 +128,11 @@
                 android:background="@color/white"
                 android:padding="10dp"
                 android:layout_marginBottom="12dp"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- ✅ ФИКСИРОВАННАЯ НИЖНЯЯ ПАНЕЛЬ (для RelativeLayout) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"

@@ -11,7 +11,7 @@ import com.example.caloriecounter.repository.SupabaseRepository;
 import com.example.caloriecounter.model.AuthResponse;
 import com.example.caloriecounter.model.ProfileData;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
     private ActivityLoginBinding binding;
     private SupabaseRepository repo;
     private static final String TAG = "AUTH";

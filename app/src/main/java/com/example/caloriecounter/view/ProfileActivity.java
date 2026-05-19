@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ArrayAdapter;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.caloriecounter.R;
@@ -15,7 +17,7 @@ import com.example.caloriecounter.databinding.ActivityProfileBinding;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import com.example.caloriecounter.viewmodel.ProfileViewModel;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BaseActivity {
     private ActivityProfileBinding binding;
     private ProfileViewModel viewModel;
     private SharedPreferences prefs;
@@ -24,6 +26,12 @@ public class ProfileActivity extends AppCompatActivity {
     private String[] gendersArr;
     private String[] goalsArr;
     private String[] lifestylesArr;
+    private static final String[] ACCENT_COLORS = {
+            "#6C63FF", "#b64949", "#b1c464", "#80cb9e", "#7bd1c7", "#659cc3", "#c365b0", "#edb0cf"
+    };
+    private String selectedTheme = "system";
+    private String selectedAccent = "#6C63FF";
+    private View selectedAccentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +60,13 @@ public class ProfileActivity extends AppCompatActivity {
         binding.tvEmail.setText(email);
         setupSpinners();
         loadFromPrefs();
-        setupObservers();
         viewModel.loadProfile(userId);
         observeProfileData();
+        setupThemeUI();
+        loadThemePrefs();
+        setupObservers();
         setupClicks();
+        applyThemeAndAccent();
     }
 
     private void setupSpinners() {
@@ -111,6 +122,11 @@ public class ProfileActivity extends AppCompatActivity {
         viewModel.getErrorMessage().observe(this, m -> {});
         viewModel.getProfileSaved().observe(this, saved -> {
             if (saved) {
+                prefs.edit()
+                        .putString("theme_mode", selectedTheme)
+                        .putString("accent_color", selectedAccent)
+                        .apply();
+                android.widget.Toast.makeText(this, "Настройки сохранены!", android.widget.Toast.LENGTH_SHORT).show();
                 finish();
             }
         });
@@ -208,10 +224,12 @@ public class ProfileActivity extends AppCompatActivity {
                         .putString("goal", goalKey)
                         .putString("lifestyle", lifeKey)
                         .putLong("profile_updated_at", System.currentTimeMillis())
+                        .putString("theme_mode", selectedTheme)
+                        .putString("accent_color", selectedAccent)
                         .apply();
 
                 binding.progressBar.setVisibility(View.VISIBLE);
-                viewModel.saveProfile(userId, email, name, height, weight, age, gender, goalKey, lifeKey);
+                viewModel.saveProfile(userId, email, name, height, weight, age, gender, goalKey, lifeKey, selectedTheme, selectedAccent);
                 binding.progressBar.postDelayed(() -> binding.progressBar.setVisibility(View.GONE), 400);
 
             } catch (NumberFormatException e) {
@@ -233,4 +251,69 @@ public class ProfileActivity extends AppCompatActivity {
                 .setNegativeButton("Отмена", null)
                 .show());
     }
+
+
+
+    private void applyThemeAndAccent() {
+
+        try {
+            int color = android.graphics.Color.parseColor(selectedAccent);
+            binding.btnSave.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+            binding.btnLogout.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+        } catch (Exception ignored) {}
+    }
+
+
+
+
+    private void setupThemeUI() {
+
+        binding.rgTheme.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rbLight) selectedTheme = "light";
+            else if (checkedId == R.id.rbDark) selectedTheme = "dark";
+            else selectedTheme = "system";
+        });
+
+        int size = (int) (40 * getResources().getDisplayMetrics().density);
+        for (String hex : ACCENT_COLORS) {
+            View circle = new View(this);
+            circle.setLayoutParams(new LinearLayout.LayoutParams(size, size));
+            circle.setBackground(getCircleDrawable(hex));
+            circle.setClickable(true);
+            circle.setTag(hex);
+            circle.setOnClickListener(v -> {
+                if (selectedAccentView != null) selectedAccentView.setAlpha(0.3f);
+                v.setAlpha(1.0f);
+                selectedAccentView = v;
+                selectedAccent = (String) v.getTag();
+            });
+            binding.llAccentColors.addView(circle);
+        }
+    }
+
+    private android.graphics.drawable.GradientDrawable getCircleDrawable(String hex) {
+        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
+        d.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        try { d.setColor(android.graphics.Color.parseColor(hex)); } catch(Exception e){}
+        d.setStroke(3, android.graphics.Color.parseColor("#EAEAEA"));
+        return d;
+    }
+
+    private void loadThemePrefs() {
+        selectedTheme = prefs.getString("theme_mode", "system");
+        selectedAccent = prefs.getString("accent_color", "#6C63FF");
+
+        if ("light".equals(selectedTheme)) binding.rgTheme.check(R.id.rbLight);
+        else if ("dark".equals(selectedTheme)) binding.rgTheme.check(R.id.rbDark);
+        else binding.rgTheme.check(R.id.rbSystem);
+
+        for (int i = 0; i < binding.llAccentColors.getChildCount(); i++) {
+            View c = binding.llAccentColors.getChildAt(i);
+            if (selectedAccent.equals(c.getTag())) {
+                selectedAccentView = c;
+                c.setAlpha(1.0f);
+            } else c.setAlpha(0.3f);
+        }
+    }
+
 }

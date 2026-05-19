@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class FoodSearchActivity extends AppCompatActivity {
+public class FoodSearchActivity extends BaseActivity {
     private static final int REQUEST_CODE_MY_RECIPE = 100;
     private static final String TAG = "FAV_UI";
     private static final int REQUEST_CODE_ADD_TO_DIARY = 101;
@@ -345,7 +345,7 @@ public class FoodSearchActivity extends AppCompatActivity {
                     new com.google.android.material.button.MaterialButton(this);
             btnAdd.setText("➕ Создать новый рецепт");
             btnAdd.setTextColor(android.graphics.Color.WHITE);
-            btnAdd.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF6C63FF));
+            btnAdd.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor(com.example.caloriecounter.utils.ThemeUtils.getAccent(this))));
             btnAdd.setCornerRadius(24);
             btnAdd.setPadding(40, 30, 40, 30);
             android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
@@ -394,7 +394,7 @@ public class FoodSearchActivity extends AppCompatActivity {
         binding.llMyRecipes.removeAllViews();
 
         if (myRecipes != null && !myRecipes.isEmpty()) {
-            android.util.Log.d("MY_RECIPES", "📚 Рендерим " + myRecipes.size() + " рецептов");
+            android.util.Log.d("MY_RECIPES", "Рендерим " + myRecipes.size() + " рецептов");
             for (UserRecipe r : myRecipes) {
                 if (r == null) continue;
                 android.widget.LinearLayout row = new android.widget.LinearLayout(this);
@@ -435,7 +435,7 @@ public class FoodSearchActivity extends AppCompatActivity {
         com.google.android.material.button.MaterialButton btnAdd = new com.google.android.material.button.MaterialButton(this);
         btnAdd.setText("➕ Создать новый рецепт");
         btnAdd.setTextColor(android.graphics.Color.WHITE);
-        btnAdd.setBackgroundTintList(androidx.core.content.ContextCompat.getColorStateList(this, R.color.primary));
+        btnAdd.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor(com.example.caloriecounter.utils.ThemeUtils.getAccent(this))));
         btnAdd.setCornerRadius(24);
         btnAdd.setPadding(40, 30, 40, 30);
         android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
@@ -529,20 +529,36 @@ public class FoodSearchActivity extends AppCompatActivity {
         container.addView(div);
     }
     private void addEmpty(LinearLayout container, String text) {
-        TextView tv = new TextView(this); tv.setText(text); tv.setGravity(android.view.Gravity.CENTER); tv.setPadding(0, 40, 0, 40); tv.setTextColor(0xFF999999); container.addView(tv);
+        TextView tv = new TextView(this);
+        tv.setText(text);
+        tv.setGravity(android.view.Gravity.CENTER);
+        tv.setPadding(0, 40, 0, 40);
+        tv.setTextColor(0xFF999999);
+        container.addView(tv);
     }
 
     private void openFoodDetail(Food f) {
         Intent i = new Intent(this, FoodDetailActivity.class);
-        i.putExtra("meal", meal); i.putExtra("foodId", f.id); i.putExtra("foodName", f.name);
-        i.putExtra("calories", f.calories); i.putExtra("protein", f.protein); i.putExtra("fat", f.fat); i.putExtra("carbs", f.carbs);
-        i.putExtra("sugar", f.sugar); i.putExtra("fiber", f.fiber); i.putExtra("userId", userId); i.putExtra("selected_date", selectedDate);
+        i.putExtra("meal", meal);
+        i.putExtra("foodId", f.id);
+        i.putExtra("foodName", f.name);
+        i.putExtra("calories", f.calories);
+        i.putExtra("protein", f.protein); i.putExtra("fat", f.fat);
+        i.putExtra("carbs", f.carbs);
+        i.putExtra("sugar", f.sugar);
+        i.putExtra("fiber", f.fiber);
+        i.putExtra("userId", userId);
+        i.putExtra("selected_date", selectedDate);
         startActivity(i);
     }
 
     private void openRecipeDetail(Recipe r) {
         Intent i = new Intent(this, RecipeDetailActivity.class);
-        i.putExtra("recipe_id", r.id); i.putExtra("recipe_name", r.name); i.putExtra("meal", meal); i.putExtra("userId", userId); i.putExtra("selected_date", selectedDate);
+        i.putExtra("recipe_id", r.id);
+        i.putExtra("recipe_name", r.name);
+        i.putExtra("meal", meal);
+        i.putExtra("userId", userId);
+        i.putExtra("selected_date", selectedDate);
         startActivity(i);
     }
 

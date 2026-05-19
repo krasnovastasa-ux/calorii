@@ -15,7 +15,7 @@ import com.example.caloriecounter.model.ProfileData;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import com.example.caloriecounter.viewmodel.ProfileViewModel;
 
-public class ProfileSetupActivity extends AppCompatActivity {
+public class ProfileSetupActivity extends BaseActivity {
     private ActivityProfileSetupBinding binding;
     private ProfileViewModel viewModel;
     private SharedPreferences prefs;
@@ -110,7 +110,12 @@ public class ProfileSetupActivity extends AppCompatActivity {
 
                 binding.progressBar.setVisibility(View.VISIBLE);
 
-                viewModel.saveProfile(userId, email, name, height, weight, age, gender, goalKey, lifeKey);
+                viewModel.saveProfile(
+                        userId, email, name, height, weight, age,
+                        gender, goalKey, lifeKey,
+                        "system",
+                        "#6C63FF"
+                );
 
                 Intent intent = new Intent(ProfileSetupActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

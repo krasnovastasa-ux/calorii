@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.content.Intent;
+import android.graphics.Color;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.caloriecounter.databinding.ActivityRecipeDetailBinding;
@@ -13,7 +14,7 @@ import com.example.caloriecounter.model.UserRecipe;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import java.util.List;
 
-public class RecipeDetailActivity extends AppCompatActivity {
+public class RecipeDetailActivity extends BaseActivity {
     private static final int REQUEST_CODE_MY_RECIPE = 100;
     private static final String TAG = "RECIPE_DETAIL";
     private ActivityRecipeDetailBinding binding;
@@ -80,17 +81,21 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
     private void loadRecipeIngredients(String rid) {
         repo.fetchRecipeFoods("eq." + rid, new SupabaseRepository.RecipeFoodListCallback() {
-            @Override public void onSuccess(List<Recipe.RecipeFood> foods) { calculateAndShow(foods); }
+            @Override public void onSuccess(List<Recipe.RecipeFood> foods) {
+                calculateAndShow(foods);
+                applyAccentToContent();
+            }
             @Override public void onError(String msg) { Log.e(TAG, "Err sys: " + msg); showEmpty(); }
         });
     }
 
     private void loadUserRecipeIngredients(String rid) {
-        Log.d(TAG, "📥 Загружаем user_recipe_ingredients для " + rid);
+        Log.d(TAG, "Загружаем user_recipe_ingredients для " + rid);
         repo.fetchUserRecipeIngredients("eq." + rid, new SupabaseRepository.RecipeFoodListCallback() {
             @Override public void onSuccess(List<Recipe.RecipeFood> foods) {
                 Log.d(TAG, " Получено ингредиентов: " + (foods != null ? foods.size() : 0));
                 calculateAndShow(foods);
+                applyAccentToContent();
             }
             @Override public void onError(String msg) {
                 Log.e(TAG, " Ошибка загрузки user_recipe_ingredients: " + msg);
@@ -110,16 +115,37 @@ public class RecipeDetailActivity extends AppCompatActivity {
             f += ing.getTotalFat(); c += ing.getTotalCarbs();
             binding.llIngredients.addView(tv("• " + (ing.foodName!=null?ing.foodName:"Продукт") + " — " + ing.grams + "г (" + ing.getTotalCalories() + " ккал)"));
         }
+
         binding.tvCalories.setText(String.format("%d ккал | Б: %dг | Ж: %dг | У: %dг", cal, p, f, c));
-        TextView t = new TextView(this); t.setText("Итого: " + cal + " ккал | Б:" + p + "г Ж:" + f + "г У:" + c + "г");
-        t.setPadding(12,10,12,10); t.setTextColor(0xFF6200EE); t.setTextSize(15);
+
+        TextView t = new TextView(this);
+        t.setText("Итого: " + cal + " ккал | Б:" + p + "г Ж:" + f + "г У:" + c + "г");
+        t.setPadding(12,10,12,10);
+        t.setTextColor(android.graphics.Color.parseColor("#6C63FF"));
+        t.setTag("accent");
+        t.setTextSize(15);
         binding.llFoods.addView(t);
     }
 
     private void showEmpty() {
         binding.tvCalories.setText("0 ккал | Б: 0г | Ж: 0г | У: 0г");
         binding.llIngredients.addView(tv("Нет ингредиентов"));
-        binding.llFoods.addView(tv("Итого: 0 ккал"));
+
+        TextView t = new TextView(this);
+        t.setText("Итого: 0 ккал");
+        t.setPadding(12,10,12,10);
+        t.setTextColor(android.graphics.Color.parseColor("#6C63FF"));
+        t.setTag("accent");
+        binding.llFoods.addView(t);
+
+        applyAccentToContent();
+    }
+    private void applyAccentToContent() {
+        try {
+            String accent = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+            com.example.caloriecounter.utils.ThemeUtils.applyAccent(binding.tvCalories, accent);
+            com.example.caloriecounter.utils.ThemeUtils.applyAccent(binding.llFoods, accent);
+        } catch (Exception ignored) {}
     }
 
     private TextView tv(String s) { TextView t = new TextView(this); t.setText(s); t.setPadding(12,6,12,6); return t; }

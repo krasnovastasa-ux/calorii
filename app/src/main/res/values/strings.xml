@@ -21,20 +21,19 @@
         <item>Очень высокая активность</item>
     </string-array>
 
-    <!-- ✅ Гибкие интервалы: минуты + часы + свой вариант -->
     <string-array name="water_interval_values">
-        <item>5</item>   <!-- 5 минут -->
-        <item>15</item>  <!-- 15 минут -->
-        <item>30</item>  <!-- 30 минут -->
-        <item>45</item>  <!-- 45 минут -->
-        <item>60</item>  <!-- 1 час -->
-        <item>120</item> <!-- 2 часа -->
-        <item>180</item> <!-- 3 часа -->
-        <item>240</item> <!-- 4 часа -->
-        <item>360</item> <!-- 6 часов -->
-        <item>480</item> <!-- 8 часов -->
-        <item>720</item> <!-- 12 часов -->
-        <item>custom</item> <!-- Свой интервал -->
+        <item>5</item>
+        <item>15</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+        <item>120</item>
+        <item>180</item>
+        <item>240</item>
+        <item>360</item>
+        <item>480</item>
+        <item>720</item>
+        <item>custom</item>
     </string-array>
 
     <string-array name="water_interval_labels">
@@ -52,7 +51,6 @@
         <item>🔧 Свой интервал...</item>
     </string-array>
 
-    <!-- ✅ Единицы времени для своего интервала -->
     <string-array name="time_units">
         <item>минут</item>
         <item>час(ов)</item>

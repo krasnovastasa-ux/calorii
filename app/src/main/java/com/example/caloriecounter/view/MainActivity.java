@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private ActivityMainBinding binding;
     private MainViewModel vm;
     private SupabaseRepository repo;
@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         vm.refresh();
         vm.refreshTargets();
+        renderWeek();
+
     }
 
     private void setupBottomNavigation() {
@@ -136,6 +138,9 @@ public class MainActivity extends AppCompatActivity {
             circle.setGravity(Gravity.CENTER);
             circle.setLayoutParams(new LinearLayout.LayoutParams(circleSize, circleSize));
             circle.setBackgroundResource(isSelected ? R.drawable.circle_selected : R.drawable.circle_bg);
+            if (isSelected) {
+                circle.setTag("accent_circle");
+            }
             TextView dayLabel = new TextView(this);
             dayLabel.setText(dayName);
             dayLabel.setTextSize(9);
@@ -158,19 +163,19 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI() {
         if (target == null || consumed == null) return;
-        int primaryColor = getResources().getColor(R.color.primary, getTheme());
+
         int warningColor = getResources().getColor(R.color.warning, getTheme());
         int dangerColor = getResources().getColor(R.color.danger, getTheme());
         int defaultColor = getResources().getColor(R.color.text_default, getTheme());
+
         int calPercent = target.cal > 0 ? (consumed.cal * 100 / target.cal) : 0;
         binding.tvConsumed.setText(String.format("%d ккал", consumed.cal));
-        if (calPercent >= 100) binding.tvConsumed.setTextColor(dangerColor);
-        else if (calPercent >= 70) binding.tvConsumed.setTextColor(warningColor);
-        else binding.tvConsumed.setTextColor(primaryColor);
+
         int remaining = target.cal - consumed.cal;
         binding.tvRemaining.setText(String.format("Осталось: %d ккал", remaining));
         if (remaining <= 0) binding.tvRemaining.setTextColor(dangerColor);
         else binding.tvRemaining.setTextColor(defaultColor);
+
         updateMacroText(binding.tvPro, "Белки", consumed.pro, target.pro, defaultColor, warningColor, dangerColor);
         updateMacroText(binding.tvFat, "Жиры", consumed.fat, target.fat, defaultColor, warningColor, dangerColor);
         updateMacroText(binding.tvCarbs, "Углеводы", consumed.carb, target.carb, defaultColor, warningColor, dangerColor);

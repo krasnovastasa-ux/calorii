@@ -17,7 +17,7 @@ import com.example.caloriecounter.model.Food;
 import com.example.caloriecounter.viewmodel.BarcodeScannerViewModel;
 import com.journeyapps.barcodescanner.CaptureManager;
 
-public class BarcodeScannerActivity extends AppCompatActivity {
+public class BarcodeScannerActivity extends BaseActivity {
     private static final int CAMERA_PERMISSION_CODE = 101;
     private ActivityBarcodeScannerBinding binding;
     private BarcodeScannerViewModel vm;

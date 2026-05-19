@@ -31,7 +31,8 @@ public class ProfileViewModel extends AndroidViewModel {
         });
     }
 
-    public void saveProfile(String userId, String email, String name, int height, int weight, int age, String gender, String goal, String lifestyle) {
+    public void saveProfile(String userId, String email, String name, int height, int weight, int age,
+                            String gender, String goal, String lifestyle, String themeMode, String accentColor) {
         ProfileData data = new ProfileData();
         data.id = userId;
         data.userId = userId;
@@ -43,15 +44,15 @@ public class ProfileViewModel extends AndroidViewModel {
         data.gender = gender;
         data.goal = goal;
         data.lifestyle = lifestyle;
+        data.themeMode = themeMode;
+        data.accentColor = accentColor;
 
         repo.updateProfile(data, new SupabaseRepository.VoidCallback() {
             @Override public void onSuccess() {
                 profileSaved.postValue(true);
                 profileUpdatedSignal.postValue(System.currentTimeMillis());
             }
-            @Override public void onError(String m) {
-                error.postValue(m);
-            }
+            @Override public void onError(String m) { error.postValue(m); }
         });
     }
 }

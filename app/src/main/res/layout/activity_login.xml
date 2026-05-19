@@ -13,14 +13,13 @@
         android:orientation="vertical"
         android:padding="32dp">
 
-        <!-- Логотип -->
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginBottom="16dp"
             android:src="@android:drawable/ic_menu_compass"
             android:tint="@color/primary"
-            android:contentDescription="Logo"/>
+            android:contentDescription="Logo" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -29,7 +28,7 @@
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -37,9 +36,8 @@
             android:text="Контролируй свой рацион легко"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="40dp"/>
+            android:layout_marginBottom="40dp" />
 
-        <!-- Карточка с формой -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -68,7 +66,7 @@
                         android:id="@+id/etEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textEmailAddress"/>
+                        android:inputType="textEmailAddress" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -87,7 +85,7 @@
                         android:id="@+id/etPassword"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textPassword"/>
+                        android:inputType="textPassword" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <ProgressBar
@@ -96,11 +94,10 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:visibility="gone"
-                    android:layout_marginTop="8dp"/>
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Кнопки -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
@@ -110,7 +107,7 @@
             android:textAllCaps="false"
             app:cornerRadius="16dp"
             android:backgroundTint="@color/primary"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="12dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRegister"
@@ -122,7 +119,7 @@
             app:cornerRadius="16dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             app:strokeColor="@color/primary"
-            android:textColor="@color/primary"/>
+            android:textColor="@color/primary" />
 
     </LinearLayout>
 </ScrollView>

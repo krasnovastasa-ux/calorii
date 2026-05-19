@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="@color/bg_primary">
 
-    <!-- ✅ ScrollView с контентом (заканчивается НАД панелью) -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,7 +17,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Кнопки профиля/календаря -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -35,9 +33,11 @@
                     android:textAllCaps="false"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     app:cornerRadius="24dp"
-                    app:strokeWidth="1.5dp"/>
+                    app:strokeWidth="1.5dp" />
 
-                <View android:layout_width="12dp" android:layout_height="0dp"/>
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="0dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCalendar"
@@ -49,10 +49,9 @@
                     android:textAllCaps="false"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     app:cornerRadius="24dp"
-                    app:strokeWidth="1.5dp"/>
+                    app:strokeWidth="1.5dp" />
             </LinearLayout>
 
-            <!-- Кнопка Сегодня -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnToday"
                 android:layout_width="wrap_content"
@@ -66,21 +65,20 @@
                 android:paddingEnd="24dp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 app:cornerRadius="24dp"
-                app:strokeWidth="1.5dp"/>
+                app:strokeWidth="1.5dp" />
 
-            <!-- Кружки недели -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp">
+
                 <LinearLayout
                     android:id="@+id/weekContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"/>
+                    android:orientation="horizontal" />
             </HorizontalScrollView>
 
-            <!-- Калории -->
             <TextView
                 android:id="@+id/tvConsumed"
                 android:layout_width="wrap_content"
@@ -89,8 +87,10 @@
                 android:textSize="36sp"
                 android:textStyle="bold"
                 android:textColor="@color/primary"
+                android:tag="accent"
                 android:layout_gravity="center"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="4dp" />
+
             <TextView
                 android:id="@+id/tvRemaining"
                 android:layout_width="wrap_content"
@@ -99,79 +99,316 @@
                 android:textSize="16sp"
                 android:textColor="@color/text_primary"
                 android:layout_gravity="center"
-                android:layout_marginBottom="12dp"/>
+                android:layout_marginBottom="12dp" />
 
-            <!-- БЖУ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="16dp">
-                <TextView android:id="@+id/tvPro" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:padding="12dp" android:background="@color/white" android:text="Белки: 0г / 0г" android:textColor="@color/text_primary"/>
-                <TextView android:id="@+id/tvFat" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:padding="12dp" android:background="@color/white" android:text="Жиры: 0г / 0г" android:textColor="@color/text_primary"/>
-                <TextView android:id="@+id/tvCarbs" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:padding="12dp" android:background="@color/white" android:text="Углеводы: 0г / 0г" android:textColor="@color/text_primary"/>
+
+                <TextView
+                    android:id="@+id/tvPro"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@color/white"
+                    android:text="Белки: 0г / 0г"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvFat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@color/white"
+                    android:text="Жиры: 0г / 0г"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvCarbs"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@color/white"
+                    android:text="Углеводы: 0г / 0г"
+                    android:textColor="@color/text_primary" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="24dp">
-                <TextView android:id="@+id/tvSugar" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:padding="12dp" android:background="@color/white" android:text="Сахар: 0г / 0г" android:textColor="@color/text_primary"/>
-                <TextView android:id="@+id/tvFiber" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:padding="12dp" android:background="@color/white" android:text="Клетчатка: 0г / 0г" android:textColor="@color/text_primary"/>
+
+                <TextView
+                    android:id="@+id/tvSugar"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@color/white"
+                    android:text="Сахар: 0г / 0г"
+                    android:textColor="@color/text_primary" />
+
+                <TextView
+                    android:id="@+id/tvFiber"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@color/white"
+                    android:text="Клетчатка: 0г / 0г"
+                    android:textColor="@color/text_primary" />
             </LinearLayout>
 
-            <!-- ЗАВТРАК -->
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" app:cardCornerRadius="12dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Завтрак" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:id="@+id/tvBreakfastTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 ккал" android:textSize="14sp" android:textColor="@color/text_secondary" android:layout_marginEnd="8dp"/>
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btnBreakfast" android:layout_width="48dp" android:layout_height="48dp" android:text="+" android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Завтрак"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvBreakfastTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 ккал"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginEnd="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBreakfast"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp" />
                     </LinearLayout>
-                    <LinearLayout android:id="@+id/llBreakfastList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="8dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/llBreakfastList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ОБЕД -->
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" app:cardCornerRadius="12dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Обед" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:id="@+id/tvLunchTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 ккал" android:textSize="14sp" android:textColor="@color/text_secondary" android:layout_marginEnd="8dp"/>
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btnLunch" android:layout_width="48dp" android:layout_height="48dp" android:text="+" android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Обед"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvLunchTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 ккал"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginEnd="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLunch"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp" />
                     </LinearLayout>
-                    <LinearLayout android:id="@+id/llLunchList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="8dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/llLunchList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- УЖИН -->
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" app:cardCornerRadius="12dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Ужин" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:id="@+id/tvDinnerTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 ккал" android:textSize="14sp" android:textColor="@color/text_secondary" android:layout_marginEnd="8dp"/>
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btnDinner" android:layout_width="48dp" android:layout_height="48dp" android:text="+" android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Ужин"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvDinnerTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 ккал"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginEnd="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnDinner"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp" />
                     </LinearLayout>
-                    <LinearLayout android:id="@+id/llDinnerList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="8dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/llDinnerList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- ПЕРЕКУС -->
-            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" app:cardCornerRadius="12dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Перекус" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/text_primary"/>
-                        <TextView android:id="@+id/tvSnackTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 ккал" android:textSize="14sp" android:textColor="@color/text_secondary" android:layout_marginEnd="8dp"/>
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btnSnack" android:layout_width="48dp" android:layout_height="48dp" android:text="+" android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Перекус"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary" />
+
+                        <TextView
+                            android:id="@+id/tvSnackTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 ккал"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginEnd="8dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSnack"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:text="+"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
+                            android:padding="0dp" />
                     </LinearLayout>
-                    <LinearLayout android:id="@+id/llSnackList" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingStart="16dp" android:paddingEnd="16dp" android:paddingBottom="8dp"/>
+
+                    <LinearLayout
+                        android:id="@+id/llSnackList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="8dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- ✅ ФИКСИРОВАННАЯ НИЖНЯЯ ПАНЕЛЬ (для RelativeLayout) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"

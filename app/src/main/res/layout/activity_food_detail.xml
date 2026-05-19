@@ -20,7 +20,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -28,7 +28,8 @@
             android:text="На 100 г:"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp" />
+
         <TextView
             android:id="@+id/tvPer100"
             android:layout_width="wrap_content"
@@ -37,7 +38,7 @@
             android:textSize="16sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -45,17 +46,19 @@
             android:text="Итого:"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp" />
+
         <TextView
             android:id="@+id/tvCalculated"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0 ккал / 0 г"
+            android:tag="accent"
             android:textSize="18sp"
             android:textColor="@color/primary"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
-        <!-- ✅ Полные слова, перенос разрешён -->
+            android:layout_marginBottom="8dp" />
+
         <TextView
             android:id="@+id/tvMacrosCalc"
             android:layout_width="match_parent"
@@ -64,7 +67,7 @@
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="32dp"
-            android:lineSpacingExtra="4dp"/>
+            android:lineSpacingExtra="4dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -74,18 +77,20 @@
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
             android:hint="Вес в граммах">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etGrams"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:maxLength="4"/>
+                android:maxLength="4" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancel"
                 android:layout_width="0dp"
@@ -94,7 +99,8 @@
                 android:layout_marginEnd="8dp"
                 android:text="Отмена"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                app:cornerRadius="16dp"/>
+                app:cornerRadius="16dp" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 android:layout_width="0dp"
@@ -103,7 +109,7 @@
                 android:layout_marginStart="8dp"
                 android:text="Сохранить"
                 app:cornerRadius="16dp"
-                android:backgroundTint="@color/primary"/>
+                android:backgroundTint="@color/primary" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

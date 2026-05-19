@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WaterTrackerActivity extends AppCompatActivity {
+public class WaterTrackerActivity extends BaseActivity {
     private boolean isDataLoaded = false;
     private ActivityWaterTrackerBinding binding;
     private SharedPreferences prefs, authPrefs;

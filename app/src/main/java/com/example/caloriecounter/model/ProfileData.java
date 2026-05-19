@@ -19,6 +19,11 @@ public class ProfileData {
     @SerializedName("age")
     public Integer age;
 
+    @SerializedName("theme_mode")
+    public String themeMode;
+    @SerializedName("accent_color")
+    public String accentColor;
+
     public String gender;
     public String goal;
     public String lifestyle;

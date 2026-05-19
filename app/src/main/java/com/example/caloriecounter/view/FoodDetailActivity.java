@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class FoodDetailActivity extends AppCompatActivity {
+public class FoodDetailActivity extends BaseActivity {
     private ActivityFoodDetailBinding binding;
     private FoodSearchViewModel vm;
 

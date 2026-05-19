@@ -12,7 +12,7 @@ import com.example.caloriecounter.R;
 import com.example.caloriecounter.model.FoodLog;
 import com.example.caloriecounter.repository.SupabaseRepository;
 
-public class FoodPortionCalculatorActivity extends AppCompatActivity {
+public class FoodPortionCalculatorActivity extends BaseActivity {
     private SupabaseRepository repo;
     private TextView tvRecipeName, tvPerServing, tvCalculated, tvMacrosCalc;
     private EditText etValue;

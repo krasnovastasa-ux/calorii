@@ -20,7 +20,7 @@ import com.example.caloriecounter.repository.SupabaseRepository;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class CalendarActivity extends AppCompatActivity {
+public class CalendarActivity extends BaseActivity {
     private ActivityCalendarBinding binding;
     private SupabaseRepository repo;
     private Calendar currentCal = Calendar.getInstance();
@@ -150,10 +150,15 @@ public class CalendarActivity extends AppCompatActivity {
         bg.setStroke(1, ContextCompat.getColor(this, R.color.text_secondary));
 
         if (dateStr.equals(todayStr)) {
-            bg.setColor(ContextCompat.getColor(this, R.color.primary));
+            String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+            int accentColor = android.graphics.Color.parseColor(accentHex);
+
+            bg.setColor(accentColor);
             bg.setStroke(0, Color.TRANSPARENT);
             dayTv.setTextColor(Color.WHITE); dayTv.setTypeface(null, android.graphics.Typeface.BOLD);
             calTv.setTextColor(Color.WHITE);
+
+            cell.setTag("accent_circle");
         } else {
             bg.setColor(Color.WHITE);
             dayTv.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
@@ -224,8 +229,12 @@ public class CalendarActivity extends AppCompatActivity {
 
                         GradientDrawable bg = new GradientDrawable(); bg.setShape(GradientDrawable.OVAL);
                         if (dateStr.equals(todayStr)) {
-                            bg.setColor(ContextCompat.getColor(this, R.color.primary));
+                            String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+                            int accentColor = android.graphics.Color.parseColor(accentHex);
+
+                            bg.setColor(accentColor);
                             circle.setTextColor(Color.WHITE); circle.setTypeface(null, android.graphics.Typeface.BOLD);
+                            circle.setTag("accent_circle");
                         } else {
                             bg.setColor(Color.WHITE);
                             circle.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
@@ -305,11 +314,22 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private void buildDayDialog(String date, int day, List<FoodLog> logs) {
+        // 🔹 Получаем акцентный цвет один раз
+        String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+        int accentColor = android.graphics.Color.parseColor(accentHex);
+
         if (logs.isEmpty()) {
-            new AlertDialog.Builder(this).setTitle(day + " " + monthFormat.format(currentCal.getTime()))
-                    .setMessage("Записей за этот день нет").setPositiveButton("Закрыть", null).show();
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle(day + " " + monthFormat.format(currentCal.getTime()))
+                    .setMessage("Записей за этот день нет")
+                    .setPositiveButton("Закрыть", null)
+                    .create();
+            dialog.show();
+            // 🔹 Красим кнопку закрытия
+            try { dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor); } catch (Exception ignored) {}
             return;
         }
+
         Map<String, List<FoodLog>> meals = new LinkedHashMap<>();
         meals.put("Завтрак", new ArrayList<>()); meals.put("Обед", new ArrayList<>());
         meals.put("Ужин", new ArrayList<>()); meals.put("Перекус", new ArrayList<>());
@@ -330,7 +350,9 @@ public class CalendarActivity extends AppCompatActivity {
         TextView sum = new TextView(this); sum.setText(String.format(Locale.getDefault(),
                 "Калории: %d ккал\n\nБелки: %d г | Жиры: %d г | Углеводы: %d г\nСахар: %d г | Клетчатка: %d г",
                 totalCal, pro, fat, carb, sugar, fiber));
-        sum.setTextSize(14); sum.setTextColor(ContextCompat.getColor(this, R.color.primary));
+        sum.setTextSize(14);
+        // 🔹 Прямое применение акцента (теги не нужны в диалогах)
+        sum.setTextColor(accentColor);
         sum.setPadding(0,0,0,24); sum.setGravity(Gravity.CENTER); sum.setTypeface(null, android.graphics.Typeface.BOLD); content.addView(sum);
 
         for (Map.Entry<String, List<FoodLog>> e : meals.entrySet()) {
@@ -342,9 +364,7 @@ public class CalendarActivity extends AppCompatActivity {
 
                 for (FoodLog l : e.getValue()) {
                     mc += l.totalCalories;
-
                     String name = (l.foodName != null ? l.foodName : "Продукт");
-
                     TextView it = new TextView(this);
                     it.setText(name + " — " + l.grams + " г (" + l.totalCalories + " ккал)");
                     it.setTextSize(14); it.setTextColor(ContextCompat.getColor(this, R.color.text_secondary)); it.setPadding(12,4,12,4);
@@ -352,7 +372,9 @@ public class CalendarActivity extends AppCompatActivity {
                 }
 
                 TextView tot = new TextView(this); tot.setText("Итого: "+mc+" ккал"); tot.setTextSize(13);
-                tot.setTypeface(null, android.graphics.Typeface.BOLD); tot.setTextColor(ContextCompat.getColor(this, R.color.primary));
+                tot.setTypeface(null, android.graphics.Typeface.BOLD);
+                // 🔹 Прямое применение акцента
+                tot.setTextColor(accentColor);
                 tot.setPadding(12,6,12,12); tot.setGravity(Gravity.END); content.addView(tot);
 
                 View div = new View(this); div.setBackgroundColor(ContextCompat.getColor(this, R.color.text_secondary));
@@ -360,9 +382,10 @@ public class CalendarActivity extends AppCompatActivity {
             }
         }
         sv.addView(content);
-        new AlertDialog.Builder(this).setView(sv).setPositiveButton("Закрыть", null).show();
-    }
-    public boolean isLoggedIn() {
-        return repo.isLoggedIn();
+
+        AlertDialog dialog = new AlertDialog.Builder(this).setView(sv).setPositiveButton("Закрыть", null).create();
+        dialog.show();
+        // 🔹 Красим кнопку закрытия
+        try { dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor); } catch (Exception ignored) {}
     }
 }

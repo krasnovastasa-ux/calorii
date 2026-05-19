@@ -9,11 +9,13 @@ import android.os.Build;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
+
 public class WaterReminderReceiver extends BroadcastReceiver {
     private static final String TAG = "WATER_NOTIF";
     private static final String CHANNEL_ID = "water_reminder_channel";
 
-    @Override public void onReceive(Context context, Intent intent) {
+    @Override
+    public void onReceive(Context context, Intent intent) {
         Log.d(TAG, " Triggered");
         createChannel(context);
 

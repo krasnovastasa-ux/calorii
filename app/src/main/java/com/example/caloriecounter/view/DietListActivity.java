@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class DietListActivity extends AppCompatActivity {
+public class DietListActivity extends BaseActivity {
     private ActivityDietListBinding binding;
     private SupabaseRepository repo;
     private List<Diet> allDiets = new ArrayList<>();

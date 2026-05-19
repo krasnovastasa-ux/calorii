@@ -12,7 +12,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- ✅ Название рецепта -->
         <TextView
             android:id="@+id/tvRecipeName"
             android:layout_width="wrap_content"
@@ -21,16 +20,15 @@
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp" />
 
-        <!-- ✅ КБЖУ на 1 порцию -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="На 1 порцию:"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/tvPerServing"
@@ -40,26 +38,26 @@
             android:textSize="16sp"
             android:textColor="@color/text_primary"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="24dp" />
 
-        <!-- ✅ Итого -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Итого:"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/tvCalculated"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="0 ккал"
+            android:tag="accent"
             android:textSize="18sp"
             android:textColor="@color/primary"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp" />
 
         <TextView
             android:id="@+id/tvMacrosCalc"
@@ -69,9 +67,9 @@
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
             android:layout_marginBottom="32dp"
-            android:lineSpacingExtra="4dp"/>
+            android:lineSpacingExtra="4dp" />
 
-        <!-- ✅ Поле ввода -->
+
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -86,17 +84,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
-                android:maxLength="5"/>
+                android:maxLength="5" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- ✅ ПЕРЕКЛЮЧАТЕЛЬ: Граммы / Порции -->
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Единица измерения:"
             android:textSize="14sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp" />
 
         <RadioGroup
             android:id="@+id/rgUnit"
@@ -112,7 +110,7 @@
                 android:layout_height="wrap_content"
                 android:text="Граммы"
                 android:checked="true"
-                android:buttonTint="@color/primary"/>
+                android:buttonTint="@color/primary" />
 
             <RadioButton
                 android:id="@+id/rbServings"
@@ -120,10 +118,10 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:text="Порции"
-                android:buttonTint="@color/primary"/>
+                android:buttonTint="@color/primary" />
         </RadioGroup>
 
-        <!-- ✅ Кнопки -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -137,7 +135,7 @@
                 android:layout_marginEnd="8dp"
                 android:text="Отмена"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                app:cornerRadius="16dp"/>
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
@@ -147,7 +145,7 @@
                 android:layout_marginStart="8dp"
                 android:text="Сохранить"
                 app:cornerRadius="16dp"
-                android:backgroundTint="@color/primary"/>
+                android:backgroundTint="@color/primary" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

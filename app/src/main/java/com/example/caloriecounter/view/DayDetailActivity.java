@@ -11,7 +11,7 @@ import com.example.caloriecounter.model.FoodLog;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import java.util.List;
 
-public class DayDetailActivity extends AppCompatActivity {
+public class DayDetailActivity extends BaseActivity {
     private ActivityDayDetailBinding binding;
 
     @Override

@@ -18,7 +18,7 @@ import com.example.caloriecounter.repository.SupabaseRepository;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyRecipeEditorActivity extends AppCompatActivity {
+public class MyRecipeEditorActivity extends BaseActivity {
     private static final String TAG = "MY_RECIPE_EDITOR";
     private ActivityMyRecipeEditorBinding binding;
     private SupabaseRepository repo;
@@ -107,7 +107,6 @@ public class MyRecipeEditorActivity extends AppCompatActivity {
         etSearch.setHint("Поиск продукта...");
         etSearch.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
         etSearch.setPadding(24, 20, 24, 20);
-        etSearch.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF6C63FF));
         root.addView(etSearch);
 
         android.widget.ListView lvFoods = new android.widget.ListView(MyRecipeEditorActivity.this);
@@ -149,6 +148,11 @@ public class MyRecipeEditorActivity extends AppCompatActivity {
             }
             @Override public void afterTextChanged(android.text.Editable s) {}
         });
+        try {
+            String accent = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+            int color = android.graphics.Color.parseColor(accent);
+            etSearch.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+        } catch (Exception ignored) {}
 
         dialog.show();
     }
@@ -179,7 +183,7 @@ public class MyRecipeEditorActivity extends AppCompatActivity {
             etGrams.setHint("Грамм (100)");
             etGrams.setText("100");
 
-            new AlertDialog.Builder(MyRecipeEditorActivity.this)
+            AlertDialog amountDialog = new AlertDialog.Builder(MyRecipeEditorActivity.this)
                     .setTitle(selected.name)
                     .setView(etGrams)
                     .setPositiveButton("Добавить", (d2, w2) -> {
@@ -188,8 +192,22 @@ public class MyRecipeEditorActivity extends AppCompatActivity {
                         addRow(selected.name, grams, selected.id, selected.calories, selected.protein, selected.fat, selected.carbs);
                     })
                     .setNegativeButton("Отмена", null)
-                    .show();
+                    .create();
+
+            amountDialog.show();
+
+            try {
+                String accent = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+                int color = android.graphics.Color.parseColor(accent);
+
+                android.widget.Button btnPositive = amountDialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE);
+                android.widget.Button btnNegative = amountDialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE);
+
+                if (btnPositive != null) btnPositive.setTextColor(color);
+                if (btnNegative != null) btnNegative.setTextColor(color);
+            } catch (Exception ignored) {}
         });
+
     }
 
     private void addRow(String name, int grams, String foodId, int c, int p, int f, int cb) {

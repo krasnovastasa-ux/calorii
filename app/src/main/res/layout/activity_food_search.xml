@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="@color/bg_primary">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_primary">
 
-    <!-- 🔍 Поле поиска -->
     <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:layout_margin="12dp" app:boxBackgroundMode="outline"
-        app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusBottomEnd="12dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
         android:hint="Поиск продукта...">
+
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etSearch" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:inputType="text" android:padding="12dp"/>
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:padding="12dp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
@@ -22,45 +30,61 @@
         android:layout_marginEnd="8dp"
         android:text="📷"
         android:textSize="18sp"
-        android:insetTop="0dp" android:insetBottom="0dp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
-    <!-- 📑 Вкладки (4 штуки) -->
     <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout" android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:background="@color/white"
-        app:tabTextColor="@color/text_secondary" app:tabSelectedTextColor="@color/primary"
-        app:tabIndicatorColor="@color/primary" app:tabMode="scrollable"/>
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:tabTextColor="@color/text_secondary"
+        app:tabSelectedTextColor="@color/primary"
+        app:tabIndicatorColor="@color/primary"
+        app:tabMode="scrollable" />
 
-    <!-- 📜 ScrollView (только один прямой потомок!) -->
-    <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
-        android:layout_weight="1" android:fillViewport="true">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
-        <!-- ✅ ОБЩИЙ КОНТЕЙНЕР для всех вкладок -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- 📦 Все продукты -->
-            <LinearLayout android:id="@+id/llProducts" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:orientation="vertical"
-                android:padding="8dp" android:visibility="gone"/>
-
-            <!-- ⭐ Избранное -->
-            <LinearLayout android:id="@+id/llFavorites" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:orientation="vertical"
-                android:padding="8dp" android:visibility="gone"/>
-
-            <!-- 🍳 Общие рецепты -->
-            <LinearLayout android:id="@+id/llRecipes" android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:orientation="vertical"
-                android:padding="8dp" android:visibility="gone"/>
-
-            <!-- 👤 МОИ РЕЦЕПТЫ  -->
-            <LinearLayout android:id="@+id/llMyRecipes"
+            <LinearLayout
+                android:id="@+id/llProducts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="8dp"/>
+                android:padding="8dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/llFavorites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/llRecipes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/llMyRecipes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp" />
 
         </LinearLayout>
     </ScrollView>

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- ✅ Интернет (для Supabase) -->
+    <!-- для Supabase -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- ✅ Уведомления (Android 13+) -->
+    <!-- Уведомления -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
-    <!-- ✅ Точные будильники (Android 12+) -->
+    <!-- Точные будильники -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
-    <!-- ✅ Пробуждение устройства для напоминаний -->
+    <!-- Пробуждение устройства для напоминаний -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
 
@@ -25,24 +25,26 @@
         android:theme="@style/Theme.CalorieCounter"
         android:usesCleartextTraffic="true">
 
-        <!-- ✅ Лаунчер всегда LoginActivity -->
-        <activity android:name=".view.LoginActivity" android:exported="true">
+
+        <!-- Лаунчер (единственная с intent-filter) -->
+        <activity
+            android:name=".view.LoginActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <!-- ✅ Все существующие активности -->
         <activity android:name=".view.DietListActivity" android:exported="false"/>
         <activity android:name=".view.DietDetailActivity" android:exported="false"/>
-        <activity android:name=".view.ProfileSetupActivity"/>
-        <activity android:name=".view.ProfileActivity"/>
-        <activity android:name=".view.BarcodeScannerActivity" />
-        <activity android:name=".view.CalendarActivity"/>
-        <activity android:name=".view.FoodSearchActivity"/>
-        <activity android:name=".view.FoodDetailActivity"/>
-        <activity android:name=".view.MainActivity"/>
+        <activity android:name=".view.ProfileSetupActivity" android:exported="false"/>
+        <activity android:name=".view.ProfileActivity" android:exported="false"/>
+        <activity android:name=".view.BarcodeScannerActivity" android:exported="false"/>
+        <activity android:name=".view.CalendarActivity" android:exported="false"/>
+        <activity android:name=".view.FoodSearchActivity" android:exported="false"/>
+        <activity android:name=".view.FoodDetailActivity" android:exported="false"/>
+        <activity android:name=".view.MainActivity" android:exported="false"/>
         <activity android:name=".view.RecipeDetailActivity" android:exported="false"/>
         <activity android:name=".view.RecipeAddActivity" android:exported="false"/>
         <activity android:name=".view.DayDetailActivity" android:exported="false"/>
@@ -52,12 +54,11 @@
             android:label="Редактор рецепта"
             android:parentActivityName=".view.FoodSearchActivity" />
         <activity android:name=".view.FoodPortionCalculatorActivity" android:exported="false" />
-
-        <!-- ✅ НОВЫЙ: Трекер воды -->
         <activity android:name=".view.WaterTrackerActivity" android:exported="false" />
 
-        <!-- ✅ НОВЫЙ: Ресивер для напоминаний воды -->
+        <!--  напоминания воды -->
         <receiver android:name=".view.WaterReminderReceiver" android:exported="false" />
+
 
     </application>
 </manifest>

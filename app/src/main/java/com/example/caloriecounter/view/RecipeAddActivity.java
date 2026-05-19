@@ -10,7 +10,7 @@ import com.example.caloriecounter.model.Recipe;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import java.util.List;
 
-public class RecipeAddActivity extends AppCompatActivity {
+public class RecipeAddActivity extends BaseActivity {
     private ActivityRecipeAddBinding binding;
     private SupabaseRepository repo;
     private String recipeId, meal, userId, selectedDate, recipeName;
