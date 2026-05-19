@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CalorieCounter</string>
+
+    <string-array name="genders">
+        <item>Мужской</item>
+        <item>Женский</item>
+    </string-array>
+
+    <string-array name="goals">
+        <item>Похудеть</item>
+        <item>Поддерживать</item>
+        <item>Набрать</item>
+    </string-array>
+
+    <string-array name="lifestyles">
+        <item>Сидячий</item>
+        <item>Лёгкая активность</item>
+        <item>Средняя активность</item>
+        <item>Высокая активность</item>
+        <item>Очень высокая активность</item>
+    </string-array>
+
+    <!-- ✅ Гибкие интервалы: минуты + часы + свой вариант -->
+    <string-array name="water_interval_values">
+        <item>5</item>   <!-- 5 минут -->
+        <item>15</item>  <!-- 15 минут -->
+        <item>30</item>  <!-- 30 минут -->
+        <item>45</item>  <!-- 45 минут -->
+        <item>60</item>  <!-- 1 час -->
+        <item>120</item> <!-- 2 часа -->
+        <item>180</item> <!-- 3 часа -->
+        <item>240</item> <!-- 4 часа -->
+        <item>360</item> <!-- 6 часов -->
+        <item>480</item> <!-- 8 часов -->
+        <item>720</item> <!-- 12 часов -->
+        <item>custom</item> <!-- Свой интервал -->
+    </string-array>
+
+    <string-array name="water_interval_labels">
+        <item>5 минут</item>
+        <item>15 минут</item>
+        <item>30 минут</item>
+        <item>45 минут</item>
+        <item>1 час</item>
+        <item>2 часа</item>
+        <item>3 часа</item>
+        <item>4 часа</item>
+        <item>6 часов</item>
+        <item>8 часов</item>
+        <item>12 часов</item>
+        <item>🔧 Свой интервал...</item>
+    </string-array>
+
+    <!-- ✅ Единицы времени для своего интервала -->
+    <string-array name="time_units">
+        <item>минут</item>
+        <item>час(ов)</item>
+    </string-array>
+
+</resources>

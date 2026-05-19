@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg_primary">
+
+    <!-- Контейнер для поиска и списка (всё, что НАД панелью) -->
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:layout_above="@id/bottom_navigation"
+        android:orientation="vertical">
+
+        <!-- 🔍 Поле поиска -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_margin="12dp" app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="12dp" app:boxCornerRadiusBottomEnd="12dp"
+            android:hint="Поиск диеты...">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearch" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 📜 Список диет -->
+        <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:fillViewport="true">
+            <LinearLayout android:id="@+id/llDietsList" android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical" android:padding="12dp"/>
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- ✅ НИЖНЯЯ ПАНЕЛЬ (закреплена внизу) -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="?android:attr/windowBackground"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemTextColor="@color/bottom_nav_color" />
+</RelativeLayout>
