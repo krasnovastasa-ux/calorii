@@ -60,10 +60,11 @@ public class SupabaseRepository {
             @Override
             public void onFailure(Call<AuthResponse> call, Throwable t) {
                 Log.e("SUPABASE", "signIn failure: " + t.getMessage());
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
+
     public void signUp(String email, String password, SignUpCallback cb) {
         Map<String, String> credentials = new HashMap<>();
         credentials.put("email", email);
@@ -83,7 +84,7 @@ public class SupabaseRepository {
             @Override
             public void onFailure(Call<AuthResponse> call, Throwable t) {
                 Log.e("SUPABASE", "signUp failure: " + t.getMessage());
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -96,18 +97,18 @@ public class SupabaseRepository {
                 if (err.contains("email_exists")) return "Email already registered";
                 if (err.contains("weak_password")) return "Weak password";
                 if (err.contains("invalid_credentials")) return "Invalid credentials";
-                return "Ошибка " + response.code();
+                return "Error " + response.code();
             }
         } catch (Exception e) {
             Log.e("SUPABASE", "Parse error: " + e.getMessage());
         }
-        return "Неизвестная ошибка";
+        return "Unknown error";
     }
 
     public void updateProfile(ProfileData profile, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null || profile.userId == null) {
-            cb.onError("Нет токена или ID");
+            cb.onError("No token or ID");
             return;
         }
 
@@ -129,7 +130,7 @@ public class SupabaseRepository {
                     }
                     @Override public void onFailure(Call<Void> call, Throwable t) {
                         Log.e(TAG, "UPSERT failure: " + t.getMessage());
-                        cb.onError("Сеть: " + t.getMessage());
+                        cb.onError("Network: " + t.getMessage());
                     }
                 });
     }
@@ -138,7 +139,7 @@ public class SupabaseRepository {
         String token = prefs.getString(KEY_TOKEN, null);
         String userId = prefs.getString(KEY_USER_ID, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
         api.getProfiles("Bearer " + token, "eq." + userId).enqueue(new Callback<List<ProfileData>>() {
@@ -146,10 +147,10 @@ public class SupabaseRepository {
                 if (handleTokenError(r, cb)) return;
                 if (r.isSuccessful() && r.body() != null && !r.body().isEmpty())
                     cb.onProfileLoaded(r.body().get(0));
-                else cb.onError("Профиль не найден");
+                else cb.onError("Profile not found");
             }
             @Override public void onFailure(Call<List<ProfileData>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -158,7 +159,7 @@ public class SupabaseRepository {
         String token = prefs.getString(KEY_TOKEN, null);
         String userId = prefs.getString(KEY_USER_ID, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
         api.getLogs("Bearer " + token, "eq." + userId).enqueue(new Callback<List<FoodLog>>() {
@@ -172,7 +173,7 @@ public class SupabaseRepository {
                 } else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<FoodLog>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -181,7 +182,7 @@ public class SupabaseRepository {
         String token = prefs.getString(KEY_TOKEN, null);
         String userId = prefs.getString(KEY_USER_ID, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
         if (log != null) log.userId = userId;
@@ -193,7 +194,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<Void> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -201,7 +202,7 @@ public class SupabaseRepository {
     public void deleteLog(String logId, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null) {
-            cb.onError("Нет токена");
+            cb.onError("No token");
             return;
         }
         api.deleteLog("Bearer " + token, "eq." + logId).enqueue(new Callback<Void>() {
@@ -211,7 +212,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<Void> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -223,7 +224,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Food>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -232,21 +233,21 @@ public class SupabaseRepository {
         String token = prefs.getString(KEY_TOKEN, null);
         String userId = prefs.getString(KEY_USER_ID, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
         api.getFavorites("Bearer " + token, "eq." + userId).enqueue(new Callback<List<Food>>() {
             @Override public void onResponse(Call<List<Food>> call, Response<List<Food>> r) {
                 if (r.code() == 401) {
                     clearSession();
-                    cb.onError("Сессия истекла");
+                    cb.onError("Session expired");
                     return;
                 }
                 if (r.isSuccessful() && r.body() != null) cb.onSuccess(r.body());
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Food>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -257,7 +258,7 @@ public class SupabaseRepository {
         if (token == null || userId == null || userId.isEmpty()) {
             userId = prefs.getString("user_id", null);
             if (userId == null || userId.isEmpty()) {
-                cb.onError("Нет сессии");
+                cb.onError("No session");
                 return;
             }
         }
@@ -274,7 +275,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<Void> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -282,7 +283,7 @@ public class SupabaseRepository {
     public void removeFromFavorites(String userId, String foodId, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null) {
-            cb.onError("Нет токена");
+            cb.onError("No token");
             return;
         }
         api.removeFavorite("Bearer " + token, "eq." + userId, "eq." + foodId).enqueue(new Callback<Void>() {
@@ -292,7 +293,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<Void> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -304,7 +305,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Recipe.RecipeFood>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -328,17 +329,17 @@ public class SupabaseRepository {
                                 if (recipe.totalProtein == 0) recipe.totalProtein = p;
                                 if (recipe.totalFat == 0) recipe.totalFat = f;
                                 if (recipe.totalCarbs == 0) recipe.totalCarbs = c;
-                                Log.d("RECIPE_CALC", recipe.name + ": " + recipe.totalCalories + " ккал");
+                                Log.d("RECIPE_CALC", recipe.name + ": " + recipe.totalCalories + " kcal");
                             }
                             @Override public void onError(String msg) {
-                                Log.w("RECIPE_CALC", "Не загрузили ингредиенты для " + recipe.name);
+                                Log.w("RECIPE_CALC", "Failed to load ingredients for " + recipe.name);
                             }
                         });
                     }
                 } else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Recipe>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -351,14 +352,14 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Recipe>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
 
     public void fetchUserRecipeById(String id, UserRecipeCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
-        if (token == null) { cb.onError("Нет токена"); return; }
+        if (token == null) { cb.onError("No token"); return; }
 
         api.getUserRecipeById("Bearer " + token, "eq." + id)
                 .enqueue(new Callback<List<UserRecipe>>() {
@@ -371,7 +372,7 @@ public class SupabaseRepository {
                         }
                     }
                     @Override public void onFailure(Call<List<UserRecipe>> call, Throwable t) {
-                        cb.onError("Сеть: " + t.getMessage());
+                        cb.onError("Network: " + t.getMessage());
                     }
                 });
     }
@@ -380,21 +381,21 @@ public class SupabaseRepository {
         String token = prefs.getString(KEY_TOKEN, null);
         String userId = prefs.getString(KEY_USER_ID, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
         api.getUserRecipes("Bearer " + token, "eq." + userId).enqueue(new Callback<List<UserRecipe>>() {
             @Override public void onResponse(Call<List<UserRecipe>> call, Response<List<UserRecipe>> r) {
                 if (r.code() == 401) {
                     clearSession();
-                    cb.onError("Сессия истекла");
+                    cb.onError("Session expired");
                     return;
                 }
                 if (r.isSuccessful() && r.body() != null) cb.onSuccess(r.body());
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<UserRecipe>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -402,7 +403,7 @@ public class SupabaseRepository {
     public void createUserRecipe(UserRecipe recipe, UserRecipeCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null) {
-            cb.onError("Нет токена");
+            cb.onError("No token");
             return;
         }
         api.createUserRecipe("Bearer " + token, "return=representation", recipe)
@@ -418,7 +419,7 @@ public class SupabaseRepository {
                     }
                     @Override
                     public void onFailure(Call<List<UserRecipe>> call, Throwable t) {
-                        cb.onError("Сеть: " + t.getMessage());
+                        cb.onError("Network: " + t.getMessage());
                     }
                 });
     }
@@ -426,8 +427,8 @@ public class SupabaseRepository {
     public void addUserRecipeIngredient(UserRecipeIngredient ing, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null) {
-            Log.e(TAG, "addUserRecipeIngredient: нет токена");
-            cb.onError("Нет токена");
+            Log.e(TAG, "addUserRecipeIngredient: no token");
+            cb.onError("No token");
             return;
         }
 
@@ -442,7 +443,7 @@ public class SupabaseRepository {
             }
             @Override public void onFailure(Call<UserRecipeIngredient> call, Throwable t) {
                 Log.e(TAG, "addUserRecipeIngredient failure: " + t.getMessage());
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -457,7 +458,7 @@ public class SupabaseRepository {
                             else cb.onError(parseError(r));
                         }
                         @Override public void onFailure(Call<List<Recipe.RecipeFood>> call, Throwable t) {
-                            cb.onError("Сеть: " + t.getMessage());
+                            cb.onError("Network: " + t.getMessage());
                         }
                     });
         } else {
@@ -468,7 +469,7 @@ public class SupabaseRepository {
                             else cb.onError(parseError(r));
                         }
                         @Override public void onFailure(Call<List<Recipe.RecipeFood>> call, Throwable t) {
-                            cb.onError("Сеть: " + t.getMessage());
+                            cb.onError("Network: " + t.getMessage());
                         }
                     });
         }
@@ -477,7 +478,7 @@ public class SupabaseRepository {
     public void deleteUserRecipe(String recipeId, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null) {
-            cb.onError("Нет токена");
+            cb.onError("No token");
             return;
         }
         api.deleteUserRecipe("Bearer " + token, "eq." + recipeId).enqueue(new Callback<Void>() {
@@ -487,7 +488,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<Void> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -504,29 +505,33 @@ public class SupabaseRepository {
         try {
             if (r.errorBody() != null) {
                 String e = r.errorBody().string();
-                com.google.gson.JsonObject j = new com.google.gson.Gson().fromJson(e, com.google.gson.JsonObject.class);
-                if (j.has("message")) return j.get("message").getAsString();
+                if (e != null && !e.isEmpty()) {
+                    com.google.gson.JsonObject j = new com.google.gson.Gson().fromJson(e, com.google.gson.JsonObject.class);
+                    if (j != null && j.has("message")) {
+                        return j.get("message").getAsString();
+                    }
+                }
             }
-        } catch (IOException ex) {
+        } catch (IOException | IllegalStateException ex) {
             Log.e(TAG, "Parse error", ex);
         }
-        return "Ошибка " + r.code();
+        return "Error " + r.code();
     }
 
     private boolean handleTokenError(Response<?> r, Object cb) {
         if (r.code() == 401) {
             clearSession();
-            if (cb instanceof AuthCallback) ((AuthCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof SignUpCallback) ((SignUpCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof SignInCallback) ((SignInCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof VoidCallback) ((VoidCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof ProfileLoadedCallback) ((ProfileLoadedCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof LogListCallback) ((LogListCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof FoodListCallback) ((FoodListCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof RecipeListCallback) ((RecipeListCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof UserRecipeListCallback) ((UserRecipeListCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof RecipeCallback) ((RecipeCallback)cb).onError("Сессия истекла");
-            else if (cb instanceof UserRecipeCallback) ((UserRecipeCallback)cb).onError("Сессия истекла");
+            if (cb instanceof AuthCallback) ((AuthCallback)cb).onError("Session expired");
+            else if (cb instanceof SignUpCallback) ((SignUpCallback)cb).onError("Session expired");
+            else if (cb instanceof SignInCallback) ((SignInCallback)cb).onError("Session expired");
+            else if (cb instanceof VoidCallback) ((VoidCallback)cb).onError("Session expired");
+            else if (cb instanceof ProfileLoadedCallback) ((ProfileLoadedCallback)cb).onError("Session expired");
+            else if (cb instanceof LogListCallback) ((LogListCallback)cb).onError("Session expired");
+            else if (cb instanceof FoodListCallback) ((FoodListCallback)cb).onError("Session expired");
+            else if (cb instanceof RecipeListCallback) ((RecipeListCallback)cb).onError("Session expired");
+            else if (cb instanceof UserRecipeListCallback) ((UserRecipeListCallback)cb).onError("Session expired");
+            else if (cb instanceof RecipeCallback) ((RecipeCallback)cb).onError("Session expired");
+            else if (cb instanceof UserRecipeCallback) ((UserRecipeCallback)cb).onError("Session expired");
             return true;
         }
         return false;
@@ -535,7 +540,7 @@ public class SupabaseRepository {
     public void addWaterLog(String userId, int ml, String date, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
 
@@ -552,14 +557,14 @@ public class SupabaseRepository {
                     cb.onSuccess();
                 } else {
                     String err = parseError(r);
-                    Log.e("WATER_LOG", "Ошибка: " + err + " | Code: " + r.code());
-                    cb.onError("Ошибка: " + err);
+                    Log.e("WATER_LOG", "Error: " + err + " | Code: " + r.code());
+                    cb.onError("Error: " + err);
                 }
             }
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 Log.e("WATER_LOG", "Network: " + t.getMessage());
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -567,7 +572,7 @@ public class SupabaseRepository {
     public void fetchWaterLogs(String userId, String date, LogListCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         if (token == null || userId == null) {
-            cb.onError("Нет сессии");
+            cb.onError("No session");
             return;
         }
 
@@ -583,14 +588,14 @@ public class SupabaseRepository {
             }
             @Override
             public void onFailure(Call<List<FoodLog>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
 
     public void deleteWaterLog(String logId, VoidCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
-        if (token == null) { cb.onError("Нет сессии"); return; }
+        if (token == null) { cb.onError("No session"); return; }
 
         api.deleteWaterLog("Bearer " + token, "eq." + logId)
                 .enqueue(new Callback<Void>() {
@@ -599,7 +604,7 @@ public class SupabaseRepository {
                         else cb.onError(parseError(r));
                     }
                     @Override public void onFailure(Call<Void> call, Throwable t) {
-                        cb.onError("Сеть: " + t.getMessage());
+                        cb.onError("Network: " + t.getMessage());
                     }
                 });
     }
@@ -614,7 +619,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Diet>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -627,7 +632,7 @@ public class SupabaseRepository {
                 else cb.onError(parseError(r));
             }
             @Override public void onFailure(Call<List<Diet>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
@@ -641,17 +646,16 @@ public class SupabaseRepository {
             }
             @Override
             public void onFailure(Call<List<Diet>> call, Throwable t) {
-                cb.onError("Сеть: " + t.getMessage());
+                cb.onError("Network: " + t.getMessage());
             }
         });
     }
-
 
     public interface WeightLogListCallback { void onSuccess(List<WeightLog> logs); void onError(String message); }
 
     public void fetchWeightLogs(String userId, WeightLogListCallback cb) {
         String token = prefs.getString("token", null);
-        if (token == null || userId == null) { cb.onError("Нет сессии"); return; }
+        if (token == null || userId == null) { cb.onError("No session"); return; }
 
         api.getWeightLogs("Bearer " + token, "eq." + userId, null)
                 .enqueue(new Callback<List<WeightLog>>() {
@@ -661,14 +665,14 @@ public class SupabaseRepository {
                         else cb.onError(parseError(r));
                     }
                     @Override public void onFailure(Call<List<WeightLog>> call, Throwable t) {
-                        cb.onError("Сеть: " + t.getMessage());
+                        cb.onError("Network: " + t.getMessage());
                     }
                 });
     }
 
     public void saveOrUpdateWeightLog(String userId, double weight, String date, VoidCallback cb) {
         String token = prefs.getString("token", null);
-        if (token == null) { cb.onError("Нет сессии"); return; }
+        if (token == null) { cb.onError("No session"); return; }
         WeightLog log = new WeightLog();
         log.userId = userId; log.weight = weight; log.logDate = date;
 
@@ -677,23 +681,92 @@ public class SupabaseRepository {
                 if (r.isSuccessful() || r.code() == 201 || r.code() == 204 || r.code() == 409) cb.onSuccess();
                 else cb.onError(parseError(r));
             }
-            @Override public void onFailure(Call<Void> call, Throwable t) { cb.onError("Сеть: " + t.getMessage()); }
+            @Override public void onFailure(Call<Void> call, Throwable t) { cb.onError("Network: " + t.getMessage()); }
         });
     }
 
     public void updateProfileWeight(String userId, double weight, VoidCallback cb) {
         String token = prefs.getString("token", null);
-        if (token == null) { cb.onError("Нет сессии"); return; }
+        if (token == null) { cb.onError("No session"); return; }
+
         ProfileData update = new ProfileData();
-        update.id = userId; update.userId = userId; update.weight = (int)Math.round(weight);
-        api.createProfile("Bearer " + token, "resolution=merge-duplicates", update).enqueue(new retrofit2.Callback<Void>() {
-            @Override public void onResponse(Call<Void> call, Response<Void> r) {
-                if (r.isSuccessful() || r.code() == 200 || r.code() == 204) {
-                    prefs.edit().putInt("weight", (int)Math.round(weight)).apply();
-                    cb.onSuccess();
-                } else cb.onError(parseError(r));
-            }
-            @Override public void onFailure(Call<Void> call, Throwable t) { cb.onError("Сеть: " + t.getMessage()); }
-        });
+        update.weight = (int) Math.round(weight);
+
+        Log.d("UPDATE_WEIGHT", "PATCH: userId=" + userId + ", weight=" + weight);
+
+        api.updateProfile("Bearer " + token, "eq." + userId, update)
+                .enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> r) {
+                        if (r.isSuccessful() || r.code() == 200 || r.code() == 204) {
+                            prefs.edit().putInt("weight", (int) Math.round(weight)).apply();
+                            cb.onSuccess();
+                        } else {
+                            String err = parseError(r);
+                            Log.e("UPDATE_WEIGHT", "Error: " + err);
+                            cb.onError(err);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        cb.onError("Network: " + t.getMessage());
+                    }
+                });
+    }
+
+    public void deleteWeightLog(String logId, VoidCallback cb) {
+        String token = prefs.getString("token", null);
+        if (token == null) {
+            cb.onError("No session");
+            return;
+        }
+
+        api.deleteWeightLog("Bearer " + token, logId)
+                .enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> r) {
+                        if (r.isSuccessful() || r.code() == 204 || r.code() == 200) {
+                            cb.onSuccess();
+                        } else {
+                            cb.onError(parseError(r));
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        cb.onError("Network: " + t.getMessage());
+                    }
+                });
+    }
+
+    public void updateWeightLogById(String logId, double weight, VoidCallback cb) {
+        String token = prefs.getString("token", null);
+        if (token == null) {
+            cb.onError("No session");
+            return;
+        }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("weight", weight);
+
+        api.updateWeightLog("Bearer " + token, logId, updates)
+                .enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> r) {
+                        if (handleTokenError(r, cb)) return;
+                        if (r.isSuccessful() || r.code() == 204 || r.code() == 200) {
+                            Log.d("WEIGHT_PATCH", "PATCH success: " + logId);
+                            cb.onSuccess();
+                        } else {
+                            String err = parseError(r);
+                            Log.e("WEIGHT_PATCH", "Error: " + err + " | Code: " + r.code());
+                            cb.onError(err);
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e("WEIGHT_PATCH", "Network: " + t.getMessage());
+                        cb.onError("Network: " + t.getMessage());
+                    }
+                });
     }
 }

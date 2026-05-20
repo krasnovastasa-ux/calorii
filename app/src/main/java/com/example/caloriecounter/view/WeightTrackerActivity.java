@@ -1,23 +1,28 @@
 package com.example.caloriecounter.view;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import com.example.caloriecounter.R;
 import android.view.View;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import android.widget.EditText;
+import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 import androidx.lifecycle.ViewModelProvider;
+import com.example.caloriecounter.R;
 import com.example.caloriecounter.databinding.ActivityWeightTrackerBinding;
+import com.example.caloriecounter.repository.SupabaseRepository;
 import com.example.caloriecounter.utils.ThemeUtils;
 import com.example.caloriecounter.viewmodel.WeightTrackerViewModel;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class WeightTrackerActivity extends BaseActivity {
     private ActivityWeightTrackerBinding binding;
     private WeightTrackerViewModel vm;
+    private SupabaseRepository repo;
     private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     @Override
@@ -29,7 +34,9 @@ public class WeightTrackerActivity extends BaseActivity {
         String userId = PreferenceManager
                 .getDefaultSharedPreferences(this)
                 .getString("user_id", "");
+
         vm = new WeightTrackerViewModel(getApplication(), userId);
+        repo = new SupabaseRepository(this);
 
         setupUI();
         setupBottomNavigation();
@@ -68,7 +75,7 @@ public class WeightTrackerActivity extends BaseActivity {
                 if (!picked.isAfter(LocalDate.now())) {
                     vm.setSelectedDate(picked);
                     updateDateField(picked);
-                } else Toast.makeText(this, "Будущие даты недоступны", Toast.LENGTH_SHORT).show();
+                } else Toast.makeText(this, "Future dates not available", Toast.LENGTH_SHORT).show();
             }, d.getYear(), d.getMonthValue() - 1, d.getDayOfMonth());
             dlg.getDatePicker().setMaxDate(System.currentTimeMillis());
             dlg.show();
@@ -81,18 +88,61 @@ public class WeightTrackerActivity extends BaseActivity {
                 vm.saveWeight(Double.parseDouble(w));
                 binding.etWeight.setText("");
             } catch (NumberFormatException e) {
-                Toast.makeText(this, "Введите корректный вес", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Enter valid weight", Toast.LENGTH_SHORT).show();
             }
+        });
+
+        binding.weightChart.setOnLogLongClickListener(log -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Edit weight for " + log.logDate)
+                    .setMessage("Current weight: " + log.weight + " kg")
+                    .setPositiveButton("Edit", (d, w) -> {
+                        EditText input = new EditText(this);
+                        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER |
+                                android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                        input.setText(String.valueOf(log.weight));
+
+                        new AlertDialog.Builder(this)
+                                .setTitle("New weight (kg)")
+                                .setView(input)
+                                .setPositiveButton("Save", (d2, w2) -> {
+                                    try {
+                                        double newWeight = Double.parseDouble(input.getText().toString());
+                                        vm.setSelectedDate(LocalDate.parse(log.logDate));
+                                        vm.saveWeight(newWeight);
+                                    } catch (NumberFormatException e) {
+                                        Toast.makeText(this, "Enter a number", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                    })
+                    .setNegativeButton("Delete", (d, w) -> {
+                        repo.deleteWeightLog(log.id, new SupabaseRepository.VoidCallback() {
+                            @Override
+                            public void onSuccess() {
+                                vm.loadLogs();
+                            }
+                            @Override
+                            public void onError(String m) {
+                                Toast.makeText(WeightTrackerActivity.this, m, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    })
+                    .setNeutralButton("Cancel", null)
+                    .show();
         });
     }
 
     private void observeData() {
         vm.getLogs().observe(this, binding.weightChart::setData);
         vm.isLoading().observe(this, l -> binding.progressBar.setVisibility(l ? View.VISIBLE : View.GONE));
-        vm.getError().observe(this, e -> { if(e!=null) Toast.makeText(this, e, Toast.LENGTH_LONG).show(); });
+        vm.getError().observe(this, e -> {
+            if(e != null) Toast.makeText(this, e, Toast.LENGTH_LONG).show();
+        });
         vm.getSaveSuccess().observe(this, s -> {
             if (s) {
-                Toast.makeText(this, "Вес сохранён", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Weight saved", Toast.LENGTH_SHORT).show();
                 binding.etWeight.setText("");
             }
         });

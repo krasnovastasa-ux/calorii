@@ -117,7 +117,7 @@ public interface SupabaseApi {
             @Query("log_date") String dateFilter
     );
 
-    @POST("rest/v1/weight_logs")
+    @POST("rest/v1/weight_logs?on_conflict=user_id,log_date")
     Call<Void> addWeightLog(
             @Header("Authorization") String token,
             @Header("Prefer") String prefer,
@@ -127,4 +127,12 @@ public interface SupabaseApi {
     Call<Void> deleteWeightLog(
             @Header("Authorization") String token,
             @Query("id") String logId);
+
+
+    @PATCH("rest/v1/weight_logs")
+    Call<Void> updateWeightLog(
+            @Header("Authorization") String token,
+            @Query("id.eq") String id,
+            @Body Map<String, Object> updates
+    );
 }
