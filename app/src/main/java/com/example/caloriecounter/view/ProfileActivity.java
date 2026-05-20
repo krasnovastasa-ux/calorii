@@ -194,8 +194,6 @@ public class ProfileActivity extends BaseActivity {
                 sendBroadcast(intent);
                 Log.d(TAG, "Broadcast sent: " + ACTION_PROFILE_UPDATED);
 
-                android.widget.Toast.makeText(this, "Settings saved",
-                        android.widget.Toast.LENGTH_SHORT).show();
 
                 finish();
             }
@@ -261,8 +259,6 @@ public class ProfileActivity extends BaseActivity {
                 String a = binding.etAge.getText().toString().trim();
 
                 if (name.isEmpty() || h.isEmpty() || w.isEmpty() || a.isEmpty()) {
-                    android.widget.Toast.makeText(this, "Fill all fields",
-                            android.widget.Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -273,8 +269,6 @@ public class ProfileActivity extends BaseActivity {
                 if (height < 100 || height > 250 ||
                         weight < 20 || weight > 300 ||
                         age < 10 || age > 100) {
-                    android.widget.Toast.makeText(this, "Invalid values",
-                            android.widget.Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -315,8 +309,6 @@ public class ProfileActivity extends BaseActivity {
 
             } catch (NumberFormatException e) {
                 Log.e(TAG, "Parse error: " + e.getMessage());
-                android.widget.Toast.makeText(this, "Enter valid numbers",
-                        android.widget.Toast.LENGTH_SHORT).show();
                 binding.progressBar.setVisibility(View.GONE);
                 binding.btnSave.setEnabled(true);
             }

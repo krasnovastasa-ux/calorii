@@ -89,8 +89,6 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
             @Override
             public void onSuccess(List<Recipe.RecipeFood> foods) {
                 if (foods == null || foods.isEmpty()) {
-                    Toast.makeText(FoodPortionCalculatorActivity.this,
-                            "Рецепт не содержит ингредиентов", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -110,8 +108,6 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
 
             @Override
             public void onError(String msg) {
-                Toast.makeText(FoodPortionCalculatorActivity.this,
-                        "Ошибка загрузки: " + msg, Toast.LENGTH_SHORT).show();
             }
         };
 
@@ -146,7 +142,6 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
 
     private void saveRecipeToDiary() {
         if (recipeFoods == null || recipeFoods.isEmpty()) {
-            Toast.makeText(this, "Ингредиенты ещё не загружены", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -204,8 +199,6 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
                 runOnUiThread(() -> {
                     btnSave.setEnabled(true);
                     btnSave.setText("Сохранить");
-                    Toast.makeText(FoodPortionCalculatorActivity.this,
-                            "Ошибка: " + m, Toast.LENGTH_SHORT).show();
                 });
             }
         });

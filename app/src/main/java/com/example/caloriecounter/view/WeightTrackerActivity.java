@@ -85,10 +85,13 @@ public class WeightTrackerActivity extends BaseActivity {
             String w = binding.etWeight.getText().toString().trim();
             if (w.isEmpty()) return;
             try {
-                vm.saveWeight(Double.parseDouble(w));
+                double weight = Double.parseDouble(w);
+                if (weight < 20 || weight > 300) {
+                    return;
+                }
+                vm.saveWeight(weight);
                 binding.etWeight.setText("");
             } catch (NumberFormatException e) {
-                Toast.makeText(this, "Enter valid weight", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -142,7 +145,6 @@ public class WeightTrackerActivity extends BaseActivity {
         });
         vm.getSaveSuccess().observe(this, s -> {
             if (s) {
-                Toast.makeText(this, "Weight saved", Toast.LENGTH_SHORT).show();
                 binding.etWeight.setText("");
             }
         });

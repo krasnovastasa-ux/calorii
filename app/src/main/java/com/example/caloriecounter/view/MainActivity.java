@@ -62,6 +62,7 @@ public class MainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         vm.refreshTargets();
+        vm.refresh();
     }
 
     private void setupBottomNavigation() {

@@ -85,7 +85,6 @@ public class FoodSearchActivity extends BaseActivity {
                     .show();
             return;
         }
-        Log.d("AUTH", "Сессия активна: userId=" + uid);
 
         vm = new ViewModelProvider(this).get(FoodSearchViewModel.class);
         meal = getIntent().getStringExtra("meal");
