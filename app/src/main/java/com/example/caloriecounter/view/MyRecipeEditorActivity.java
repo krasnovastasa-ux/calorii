@@ -47,8 +47,13 @@ public class MyRecipeEditorActivity extends BaseActivity {
     private void setupClicks() {
         View btnSave = findView("btnSave");
         if (btnSave != null) btnSave.setOnClickListener(v -> save());
+
+        View btnCancel = findView("btnCancel");
+        if (btnCancel != null) btnCancel.setOnClickListener(v -> finish());
+
         View btnBack = findView("btnBack");
         if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+
         View btnAdd = findView("btnAddIngredient");
         if (btnAdd != null) btnAdd.setOnClickListener(v -> showFoodPicker());
     }

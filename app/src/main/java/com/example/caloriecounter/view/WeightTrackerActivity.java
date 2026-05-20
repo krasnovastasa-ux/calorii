@@ -5,11 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import com.example.caloriecounter.R;
 import android.view.View;
-import android.content.Intent;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.caloriecounter.databinding.ActivityWeightTrackerBinding;
 import com.example.caloriecounter.utils.ThemeUtils;
@@ -28,7 +26,7 @@ public class WeightTrackerActivity extends BaseActivity {
         binding = ActivityWeightTrackerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        String userId = android.preference.PreferenceManager
+        String userId = PreferenceManager
                 .getDefaultSharedPreferences(this)
                 .getString("user_id", "");
         vm = new WeightTrackerViewModel(getApplication(), userId);
@@ -37,14 +35,31 @@ public class WeightTrackerActivity extends BaseActivity {
         setupBottomNavigation();
         observeData();
         vm.loadLogs();
+
+        binding.btnWeek.post(() -> {
+            highlightBtn(binding.btnWeek);
+            vm.setPeriod("week");
+        });
     }
 
     private void setupUI() {
         updateDateField(vm.getSelectedDate());
 
-        binding.btnWeek.setOnClickListener(v -> { highlightBtn(binding.btnWeek); vm.setPeriod("week"); });
-        binding.btnMonth.setOnClickListener(v -> { highlightBtn(binding.btnMonth); vm.setPeriod("month"); });
-        binding.btnYear.setOnClickListener(v -> { highlightBtn(binding.btnYear); vm.setPeriod("year"); });
+        binding.btnWeek.setOnClickListener(v -> {
+            highlightBtn(binding.btnWeek);
+            vm.setPeriod("week");
+            vm.loadLogs();
+        });
+        binding.btnMonth.setOnClickListener(v -> {
+            highlightBtn(binding.btnMonth);
+            vm.setPeriod("month");
+            vm.loadLogs();
+        });
+        binding.btnYear.setOnClickListener(v -> {
+            highlightBtn(binding.btnYear);
+            vm.setPeriod("year");
+            vm.loadLogs();
+        });
 
         binding.etDate.setOnClickListener(v -> {
             LocalDate d = vm.getSelectedDate();
@@ -64,11 +79,11 @@ public class WeightTrackerActivity extends BaseActivity {
             if (w.isEmpty()) return;
             try {
                 vm.saveWeight(Double.parseDouble(w));
+                binding.etWeight.setText("");
             } catch (NumberFormatException e) {
                 Toast.makeText(this, "Введите корректный вес", Toast.LENGTH_SHORT).show();
             }
         });
-        highlightBtn(binding.btnWeek);
     }
 
     private void observeData() {
@@ -77,9 +92,8 @@ public class WeightTrackerActivity extends BaseActivity {
         vm.getError().observe(this, e -> { if(e!=null) Toast.makeText(this, e, Toast.LENGTH_LONG).show(); });
         vm.getSaveSuccess().observe(this, s -> {
             if (s) {
-                Toast.makeText(this, "Вес сохранён и обновлён в профиле", Toast.LENGTH_SHORT).show();
-
-                sendBroadcast(new Intent("com.example.caloriecounter.WEIGHT_UPDATED"));
+                Toast.makeText(this, "Вес сохранён", Toast.LENGTH_SHORT).show();
+                binding.etWeight.setText("");
             }
         });
     }
@@ -108,17 +122,21 @@ public class WeightTrackerActivity extends BaseActivity {
             return false;
         });
     }
+
     private void updateDateField(LocalDate d) {
         binding.etDate.setText(d.format(dtf));
     }
 
     private void highlightBtn(com.google.android.material.button.MaterialButton active) {
-        binding.btnWeek.setBackgroundTintList(null); binding.btnWeek.setTextColor(getColor(com.example.caloriecounter.R.color.text_primary));
-        binding.btnMonth.setBackgroundTintList(null); binding.btnMonth.setTextColor(getColor(com.example.caloriecounter.R.color.text_primary));
-        binding.btnYear.setBackgroundTintList(null); binding.btnYear.setTextColor(getColor(com.example.caloriecounter.R.color.text_primary));
-
         String accent = ThemeUtils.getAccent(this);
-        active.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor(accent)));
+        int accentColor = android.graphics.Color.parseColor(accent);
+        int grayColor = android.graphics.Color.parseColor("#E0E0E0");
+
+        binding.btnWeek.setBackgroundTintList(android.content.res.ColorStateList.valueOf(grayColor));
+        binding.btnMonth.setBackgroundTintList(android.content.res.ColorStateList.valueOf(grayColor));
+        binding.btnYear.setBackgroundTintList(android.content.res.ColorStateList.valueOf(grayColor));
+
+        active.setBackgroundTintList(android.content.res.ColorStateList.valueOf(accentColor));
         active.setTextColor(0xFFFFFFFF);
     }
 }

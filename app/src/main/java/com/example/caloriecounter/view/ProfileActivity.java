@@ -8,17 +8,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ArrayAdapter;
-import android.os.Build;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatDelegate;
-import android.annotation.SuppressLint;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.core.content.ContextCompat;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.annotation.SuppressLint;
 import com.example.caloriecounter.R;
 import com.example.caloriecounter.databinding.ActivityProfileBinding;
 import com.example.caloriecounter.repository.SupabaseRepository;
@@ -37,9 +35,10 @@ public class ProfileActivity extends BaseActivity {
     private static final String[] ACCENT_COLORS = {
             "#6C63FF", "#b64949", "#b1c464", "#80cb9e", "#7bd1c7", "#659cc3", "#c365b0", "#edb0cf"
     };
-    private String selectedTheme = "system";
+
     private String selectedAccent = "#6C63FF";
     private View selectedAccentView;
+
     private final BroadcastReceiver weightUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -81,21 +80,18 @@ public class ProfileActivity extends BaseActivity {
         setupObservers();
         setupClicks();
         applyThemeAndAccent();
-        applyThemeAndAccent();
         registerWeightUpdateReceiver();
     }
 
     @SuppressLint("UnprotectedRegisterReceiver")
     private void registerWeightUpdateReceiver() {
-        androidx.core.content.ContextCompat.registerReceiver(
+        ContextCompat.registerReceiver(
                 this,
                 weightUpdateReceiver,
                 new IntentFilter("com.example.caloriecounter.WEIGHT_UPDATED"),
-                androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+                ContextCompat.RECEIVER_NOT_EXPORTED
         );
     }
-
-
 
     @Override
     protected void onResume() {
@@ -105,6 +101,11 @@ public class ProfileActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(weightUpdateReceiver);
+    }
 
     private void setupSpinners() {
         ArrayAdapter<String> g = new ArrayAdapter<>(this,
@@ -160,7 +161,6 @@ public class ProfileActivity extends BaseActivity {
         viewModel.getProfileSaved().observe(this, saved -> {
             if (saved) {
                 prefs.edit()
-                        .putString("theme_mode", selectedTheme)
                         .putString("accent_color", selectedAccent)
                         .apply();
                 android.widget.Toast.makeText(this, "Настройки сохранены!", android.widget.Toast.LENGTH_SHORT).show();
@@ -261,12 +261,11 @@ public class ProfileActivity extends BaseActivity {
                         .putString("goal", goalKey)
                         .putString("lifestyle", lifeKey)
                         .putLong("profile_updated_at", System.currentTimeMillis())
-                        .putString("theme_mode", selectedTheme)
                         .putString("accent_color", selectedAccent)
                         .apply();
 
                 binding.progressBar.setVisibility(View.VISIBLE);
-                viewModel.saveProfile(userId, email, name, height, weight, age, gender, goalKey, lifeKey, selectedTheme, selectedAccent);
+                viewModel.saveProfile(userId, email, name, height, weight, age, gender, goalKey, lifeKey, "system",selectedAccent);
                 binding.progressBar.postDelayed(() -> binding.progressBar.setVisibility(View.GONE), 400);
 
             } catch (NumberFormatException e) {
@@ -277,9 +276,7 @@ public class ProfileActivity extends BaseActivity {
                 .setTitle("Выход")
                 .setMessage("Точно выйти?")
                 .setPositiveButton("Выйти", (d, w) -> {
-
                     new SupabaseRepository(this).clearSession();
-
                     Intent intent = new Intent(this, LoginActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
@@ -289,10 +286,7 @@ public class ProfileActivity extends BaseActivity {
                 .show());
     }
 
-
-
     private void applyThemeAndAccent() {
-
         try {
             int color = android.graphics.Color.parseColor(selectedAccent);
             binding.btnSave.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
@@ -300,17 +294,7 @@ public class ProfileActivity extends BaseActivity {
         } catch (Exception ignored) {}
     }
 
-
-
-
     private void setupThemeUI() {
-
-        binding.rgTheme.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.rbLight) selectedTheme = "light";
-            else if (checkedId == R.id.rbDark) selectedTheme = "dark";
-            else selectedTheme = "system";
-        });
-
         int size = (int) (40 * getResources().getDisplayMetrics().density);
         for (String hex : ACCENT_COLORS) {
             View circle = new View(this);
@@ -337,13 +321,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void loadThemePrefs() {
-        selectedTheme = prefs.getString("theme_mode", "system");
         selectedAccent = prefs.getString("accent_color", "#6C63FF");
-
-        if ("light".equals(selectedTheme)) binding.rgTheme.check(R.id.rbLight);
-        else if ("dark".equals(selectedTheme)) binding.rgTheme.check(R.id.rbDark);
-        else binding.rgTheme.check(R.id.rbSystem);
-
         for (int i = 0; i < binding.llAccentColors.getChildCount(); i++) {
             View c = binding.llAccentColors.getChildAt(i);
             if (selectedAccent.equals(c.getTag())) {
@@ -351,12 +329,5 @@ public class ProfileActivity extends BaseActivity {
                 c.setAlpha(1.0f);
             } else c.setAlpha(0.3f);
         }
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(weightUpdateReceiver);
     }
 }

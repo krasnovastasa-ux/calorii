@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -39,18 +38,12 @@ public class ThemeApplier {
         tintButtonIfFound(root, R.id.btnLunch, color);
         tintButtonIfFound(root, R.id.btnDinner, color);
         tintButtonIfFound(root, R.id.btnSnack, color);
-
         tintButtonIfFound(root, R.id.btnAddWater, color);
         tintButtonIfFound(root, R.id.btnReminderSettings, color);
         tintButtonIfFound(root, R.id.btnSave, color);
         tintButtonIfFound(root, R.id.btnAddRecipe, color);
 
-        tintRadioButtonIfFound(root, R.id.rbLight, color);
-        tintRadioButtonIfFound(root, R.id.rbDark, color);
-        tintRadioButtonIfFound(root, R.id.rbSystem, color);
-
         tintBottomNavIfFound(root, R.id.bottom_navigation, color);
-
         tintTextWithTag(root, color);
     }
 
@@ -62,13 +55,6 @@ public class ThemeApplier {
             btn.setBackgroundTintList(ColorStateList.valueOf(color));
             boolean dark = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) < 186;
             btn.setTextColor(dark ? Color.WHITE : Color.BLACK);
-        }
-    }
-
-    private static void tintRadioButtonIfFound(View root, int id, int color) {
-        View v = root.findViewById(id);
-        if (v instanceof RadioButton) {
-            ((RadioButton) v).setButtonTintList(ColorStateList.valueOf(color));
         }
     }
 
