@@ -272,18 +272,34 @@ public class ProfileActivity extends BaseActivity {
             }
         });
 
-        binding.btnLogout.setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("Выход")
-                .setMessage("Точно выйти?")
-                .setPositiveButton("Выйти", (d, w) -> {
-                    new SupabaseRepository(this).clearSession();
-                    Intent intent = new Intent(this, LoginActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .setNegativeButton("Отмена", null)
-                .show());
+        binding.btnLogout.setOnClickListener(v -> {
+            AlertDialog dialog = new AlertDialog.Builder(this)
+                    .setTitle("Выход")
+                    .setMessage("Точно выйти?")
+                    .setPositiveButton("Выйти", (d, w) -> {
+                        new SupabaseRepository(this).clearSession();
+                        Intent intent = new Intent(this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .setNegativeButton("Отмена", null)
+                    .create(); // ← сначала создаём, не показываем
+
+            dialog.show(); // ← показываем
+
+            // 🔥 Применяем акцентный цвет к кнопкам
+            try {
+                String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
+                int accentColor = android.graphics.Color.parseColor(accentHex);
+
+                android.widget.Button btnPositive = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE);
+                android.widget.Button btnNegative = dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE);
+
+                if (btnPositive != null) btnPositive.setTextColor(accentColor);
+                if (btnNegative != null) btnNegative.setTextColor(accentColor);
+            } catch (Exception ignored) {}
+        });
     }
 
     private void applyThemeAndAccent() {
