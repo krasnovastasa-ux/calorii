@@ -3,6 +3,7 @@ package com.example.caloriecounter.view;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.caloriecounter.databinding.ActivityRecipeAddBinding;
 import com.example.caloriecounter.model.FoodLog;
@@ -123,9 +124,33 @@ public class RecipeAddActivity extends BaseActivity {
     }
 
     private void saveToDiary() {
+        String valStr = binding.etValue.getText().toString().trim();
+
+        if (valStr.isEmpty()) {
+            binding.etValue.setError("Введите значение");
+            binding.etValue.requestFocus();
+            return;
+        }
+
+        double entered;
+        try {
+            entered = Double.parseDouble(valStr);
+        } catch (NumberFormatException e) {
+            binding.etValue.setError("Некорректное число");
+            binding.etValue.requestFocus();
+            return;
+        }
+
+        if (entered < 1 || entered > 10000) {
+            binding.etValue.setError("Допустимо: 1-10000");
+            binding.etValue.requestFocus();
+            return;
+        }
+
         if (recipeFoods == null || recipeFoods.isEmpty()) {
             return;
         }
+
         try {
             String inputStr = binding.etValue.getText().toString().trim();
             double inputVal = inputStr.isEmpty() ? 1.0 : Double.parseDouble(inputStr);
@@ -180,20 +205,25 @@ public class RecipeAddActivity extends BaseActivity {
             log.totalSugar = 0;
             log.totalFiber = 0;
 
-            binding.btnSave.setEnabled(false); binding.btnSave.setText("Сохранение...");
+            binding.btnSave.setEnabled(false);
+            binding.btnSave.setText("Сохранение...");
+
             repo.addLog(log, selectedDate, new SupabaseRepository.VoidCallback() {
                 @Override public void onSuccess() {
                     runOnUiThread(() -> {
+                        setResult(RESULT_OK);
                         finish();
                     });
                 }
                 @Override public void onError(String m) {
                     runOnUiThread(() -> {
-                        binding.btnSave.setEnabled(true); binding.btnSave.setText("Сохранить");
+                        binding.btnSave.setEnabled(true);
+                        binding.btnSave.setText("Сохранить");
                     });
                 }
             });
         } catch (Exception e) {
+            Log.e("RECIPE_ADD", "Ошибка: " + e.getMessage());
         }
     }
 }

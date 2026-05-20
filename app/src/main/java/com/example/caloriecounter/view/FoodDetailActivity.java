@@ -99,6 +99,13 @@ public class FoodDetailActivity extends BaseActivity {
     }
 
     private void saveLog(int grams) {
+
+        if (grams < 1 || grams > 10000) {
+            binding.etGrams.setError("Допустимо: 1-10000 г");
+            binding.etGrams.requestFocus();
+            return;
+        }
+
         FoodLog log = new FoodLog();
         log.userId = userId;
         log.foodId = foodId;

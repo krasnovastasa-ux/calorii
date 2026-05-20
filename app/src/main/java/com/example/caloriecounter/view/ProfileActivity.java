@@ -1,28 +1,34 @@
 package com.example.caloriecounter.view;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.ArrayAdapter;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.core.content.ContextCompat;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
+
 import com.example.caloriecounter.R;
 import com.example.caloriecounter.databinding.ActivityProfileBinding;
 import com.example.caloriecounter.repository.SupabaseRepository;
 import com.example.caloriecounter.viewmodel.ProfileViewModel;
 
 public class ProfileActivity extends BaseActivity {
+
+    private static final String TAG = "PROFILE_ACTIVITY";
+    private static final String ACTION_PROFILE_UPDATED = "com.example.caloriecounter.PROFILE_UPDATED";
 
     private ActivityProfileBinding binding;
     private ProfileViewModel viewModel;
@@ -32,17 +38,22 @@ public class ProfileActivity extends BaseActivity {
     private String[] gendersArr;
     private String[] goalsArr;
     private String[] lifestylesArr;
+
     private static final String[] ACCENT_COLORS = {
-            "#6C63FF", "#b64949", "#b1c464", "#80cb9e", "#7bd1c7", "#659cc3", "#c365b0", "#edb0cf"
+            "#6C63FF", "#b64949", "#b1c464", "#80cb9e",
+            "#7bd1c7", "#659cc3", "#c365b0", "#edb0cf"
     };
 
     private String selectedAccent = "#6C63FF";
     private View selectedAccentView;
 
-    private final BroadcastReceiver weightUpdateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver profileUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            viewModel.loadProfile(userId);
+            Log.d(TAG, "Profile update signal received, reloading data");
+            if (userId != null && !userId.isEmpty()) {
+                viewModel.loadProfile(userId);
+            }
         }
     };
 
@@ -80,17 +91,7 @@ public class ProfileActivity extends BaseActivity {
         setupObservers();
         setupClicks();
         applyThemeAndAccent();
-        registerWeightUpdateReceiver();
-    }
-
-    @SuppressLint("UnprotectedRegisterReceiver")
-    private void registerWeightUpdateReceiver() {
-        ContextCompat.registerReceiver(
-                this,
-                weightUpdateReceiver,
-                new IntentFilter("com.example.caloriecounter.WEIGHT_UPDATED"),
-                ContextCompat.RECEIVER_NOT_EXPORTED
-        );
+        registerProfileUpdateReceiver();
     }
 
     @Override
@@ -104,7 +105,21 @@ public class ProfileActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(weightUpdateReceiver);
+        try {
+            unregisterReceiver(profileUpdateReceiver);
+        } catch (IllegalArgumentException e) {
+        }
+    }
+
+    private void registerProfileUpdateReceiver() {
+        IntentFilter filter = new IntentFilter(ACTION_PROFILE_UPDATED);
+        ContextCompat.registerReceiver(
+                this,
+                profileUpdateReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+        );
+        Log.d(TAG, "Receiver registered");
     }
 
     private void setupSpinners() {
@@ -126,6 +141,7 @@ public class ProfileActivity extends BaseActivity {
 
     private void loadFromPrefs() {
         binding.etName.setText(prefs.getString("name", ""));
+
         int h = prefs.getInt("height", 0);
         int w = prefs.getInt("weight", 0);
         int a = prefs.getInt("age", 0);
@@ -135,35 +151,52 @@ public class ProfileActivity extends BaseActivity {
         if (a > 0) binding.etAge.setText(String.valueOf(a));
 
         binding.spinnerGender.setSelection(findIndex(gendersArr,
-                prefs.getString("gender", "Женский")));
+                prefs.getString("gender", "Female")));
 
         String savedGoal = prefs.getString("goal", "maintain");
-        String goalDisplay = savedGoal.equals("lose") ? "Похудеть" :
-                savedGoal.equals("gain") ? "Набрать" : "Поддерживать";
+        String goalDisplay = savedGoal.equals("lose") ? "Lose" :
+                savedGoal.equals("gain") ? "Gain" : "Maintain";
         binding.spinnerGoal.setSelection(findIndex(goalsArr, goalDisplay));
 
         String savedLifestyle = prefs.getString("lifestyle", "moderate");
-        String lifeDisplay = savedLifestyle.equals("sedentary") ? "Сидячий" :
-                savedLifestyle.equals("light") ? "Лёгкая активность" :
-                        savedLifestyle.equals("moderate") ? "Средняя активность" : "Высокая активность";
+        String lifeDisplay = savedLifestyle.equals("sedentary") ? "Sedentary" :
+                savedLifestyle.equals("light") ? "Light activity" :
+                        savedLifestyle.equals("moderate") ? "Moderate activity" : "High activity";
         binding.spinnerLifestyle.setSelection(findIndex(lifestylesArr, lifeDisplay));
     }
 
     private int findIndex(String[] arr, String val) {
+        if (val == null) return 0;
         for (int i = 0; i < arr.length; i++) {
-            if (arr[i].trim().equalsIgnoreCase(val.trim())) return i;
+            if (arr[i] != null && arr[i].trim().equalsIgnoreCase(val.trim())) {
+                return i;
+            }
         }
         return 0;
     }
 
     private void setupObservers() {
-        viewModel.getErrorMessage().observe(this, m -> {});
+        viewModel.getErrorMessage().observe(this, m -> {
+            if (m != null && !m.isEmpty()) {
+                Log.e(TAG, "Error: " + m);
+            }
+        });
+
         viewModel.getProfileSaved().observe(this, saved -> {
-            if (saved) {
+            if (Boolean.TRUE.equals(saved)) {
+                Log.d(TAG, "Profile saved successfully");
+
                 prefs.edit()
                         .putString("accent_color", selectedAccent)
                         .apply();
-                android.widget.Toast.makeText(this, "Настройки сохранены!", android.widget.Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(ACTION_PROFILE_UPDATED);
+                sendBroadcast(intent);
+                Log.d(TAG, "Broadcast sent: " + ACTION_PROFILE_UPDATED);
+
+                android.widget.Toast.makeText(this, "Settings saved",
+                        android.widget.Toast.LENGTH_SHORT).show();
+
                 finish();
             }
         });
@@ -171,46 +204,51 @@ public class ProfileActivity extends BaseActivity {
 
     private void observeProfileData() {
         viewModel.getProfileData().observe(this, profile -> {
-            if (profile != null) {
-                if (profile.name != null && !profile.name.isEmpty()) {
-                    binding.etName.setText(profile.name);
-                }
-                if (profile.height != null && profile.height > 0) {
-                    binding.etHeight.setText(String.valueOf(profile.height));
-                }
-                if (profile.weight != null && profile.weight > 0) {
-                    binding.etWeight.setText(String.valueOf(profile.weight));
-                }
-                if (profile.age != null && profile.age > 0) {
-                    binding.etAge.setText(String.valueOf(profile.age));
-                }
-                if (profile.gender != null) {
-                    binding.spinnerGender.setSelection(findIndex(gendersArr, profile.gender));
-                }
-                if (profile.goal != null) {
-                    String goalDisplay = profile.goal.equals("lose") ? "Похудеть" :
-                            profile.goal.equals("gain") ? "Набрать" : "Поддерживать";
-                    binding.spinnerGoal.setSelection(findIndex(goalsArr, goalDisplay));
-                }
-                if (profile.lifestyle != null) {
-                    String lifeDisplay = profile.lifestyle.equals("sedentary") ? "Сидячий" :
-                            profile.lifestyle.equals("light") ? "Лёгкая активность" :
-                                    profile.lifestyle.equals("moderate") ? "Средняя активность" : "Высокая активность";
-                    binding.spinnerLifestyle.setSelection(findIndex(lifestylesArr, lifeDisplay));
-                }
-
-                prefs.edit()
-                        .putString("name", profile.name)
-                        .putInt("height", profile.height != null ? profile.height : 0)
-                        .putInt("weight", profile.weight != null ? profile.weight : 0)
-                        .putInt("age", profile.age != null ? profile.age : 0)
-                        .putString("gender", profile.gender)
-                        .putString("goal", profile.goal)
-                        .putString("lifestyle", profile.lifestyle)
-                        .apply();
-
-                Log.d("PROFILE", " Данные профиля загружены из БД");
+            if (profile == null) {
+                Log.w(TAG, "Profile is null");
+                return;
             }
+
+            Log.d(TAG, "Profile loaded: name='" + profile.name + "'");
+
+            if (profile.name != null && !profile.name.isEmpty()) {
+                binding.etName.setText(profile.name);
+            }
+            if (profile.height != null && profile.height > 0) {
+                binding.etHeight.setText(String.valueOf(profile.height));
+            }
+            if (profile.weight != null && profile.weight > 0) {
+                binding.etWeight.setText(String.valueOf(profile.weight));
+            }
+            if (profile.age != null && profile.age > 0) {
+                binding.etAge.setText(String.valueOf(profile.age));
+            }
+            if (profile.gender != null) {
+                binding.spinnerGender.setSelection(findIndex(gendersArr, profile.gender));
+            }
+            if (profile.goal != null) {
+                String goalDisplay = profile.goal.equals("lose") ? "Lose" :
+                        profile.goal.equals("gain") ? "Gain" : "Maintain";
+                binding.spinnerGoal.setSelection(findIndex(goalsArr, goalDisplay));
+            }
+            if (profile.lifestyle != null) {
+                String lifeDisplay = profile.lifestyle.equals("sedentary") ? "Sedentary" :
+                        profile.lifestyle.equals("light") ? "Light activity" :
+                                profile.lifestyle.equals("moderate") ? "Moderate activity" : "High activity";
+                binding.spinnerLifestyle.setSelection(findIndex(lifestylesArr, lifeDisplay));
+            }
+
+            prefs.edit()
+                    .putString("name", profile.name)
+                    .putInt("height", profile.height != null ? profile.height : 0)
+                    .putInt("weight", profile.weight != null ? profile.weight : 0)
+                    .putInt("age", profile.age != null ? profile.age : 0)
+                    .putString("gender", profile.gender)
+                    .putString("goal", profile.goal)
+                    .putString("lifestyle", profile.lifestyle)
+                    .apply();
+
+            Log.d(TAG, "Profile data updated in SharedPreferences");
         });
     }
 
@@ -223,6 +261,8 @@ public class ProfileActivity extends BaseActivity {
                 String a = binding.etAge.getText().toString().trim();
 
                 if (name.isEmpty() || h.isEmpty() || w.isEmpty() || a.isEmpty()) {
+                    android.widget.Toast.makeText(this, "Fill all fields",
+                            android.widget.Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -233,6 +273,8 @@ public class ProfileActivity extends BaseActivity {
                 if (height < 100 || height > 250 ||
                         weight < 20 || weight > 300 ||
                         age < 10 || age > 100) {
+                    android.widget.Toast.makeText(this, "Invalid values",
+                            android.widget.Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -244,13 +286,14 @@ public class ProfileActivity extends BaseActivity {
                 String goalDisplay = goalsArr[goalPos];
                 String lifeDisplay = lifestylesArr[lifePos];
 
-                String goalKey = goalDisplay.equals("Похудеть") ? "lose" :
-                        goalDisplay.equals("Набрать") ? "gain" : "maintain";
-                String lifeKey = lifeDisplay.equals("Сидячий") ? "sedentary" :
-                        lifeDisplay.equals("Лёгкая активность") ? "light" :
-                                lifeDisplay.equals("Средняя активность") ? "moderate" : "active";
+                String goalKey = goalDisplay.equals("Lose") ? "lose" :
+                        goalDisplay.equals("Gain") ? "gain" : "maintain";
+                String lifeKey = lifeDisplay.equals("Sedentary") ? "sedentary" :
+                        lifeDisplay.equals("Light activity") ? "light" :
+                                lifeDisplay.equals("Moderate activity") ? "moderate" : "active";
 
-                Log.d("PROFILE_SAVE", " Сохраняю: g=" + gender + ", gl=" + goalKey + ", l=" + lifeKey);
+                Log.d(TAG, "Saving: name=" + name + ", g=" + gender +
+                        ", gl=" + goalKey + ", l=" + lifeKey + ", accent=" + selectedAccent);
 
                 prefs.edit()
                         .putString("name", name)
@@ -260,21 +303,28 @@ public class ProfileActivity extends BaseActivity {
                         .putString("gender", gender)
                         .putString("goal", goalKey)
                         .putString("lifestyle", lifeKey)
-                        .putLong("profile_updated_at", System.currentTimeMillis())
                         .putString("accent_color", selectedAccent)
+                        .putLong("profile_updated_at", System.currentTimeMillis())
                         .apply();
 
                 binding.progressBar.setVisibility(View.VISIBLE);
-                viewModel.saveProfile(userId, email, name, height, weight, age, gender, goalKey, lifeKey, "system",selectedAccent);
-                binding.progressBar.postDelayed(() -> binding.progressBar.setVisibility(View.GONE), 400);
+                binding.btnSave.setEnabled(false);
+
+                viewModel.saveProfile(userId, email, name, height, weight, age,
+                        gender, goalKey, lifeKey, "system", selectedAccent);
 
             } catch (NumberFormatException e) {
+                Log.e(TAG, "Parse error: " + e.getMessage());
+                android.widget.Toast.makeText(this, "Enter valid numbers",
+                        android.widget.Toast.LENGTH_SHORT).show();
+                binding.progressBar.setVisibility(View.GONE);
+                binding.btnSave.setEnabled(true);
             }
         });
 
         binding.btnLogout.setOnClickListener(v -> new AlertDialog.Builder(this)
                 .setTitle("Выход")
-                .setMessage("Точно выйти?")
+                .setMessage("Точно ввыйти из аккаунта?")
                 .setPositiveButton("Выйти", (d, w) -> {
                     new SupabaseRepository(this).clearSession();
                     Intent intent = new Intent(this, LoginActivity.class);
@@ -288,9 +338,11 @@ public class ProfileActivity extends BaseActivity {
 
     private void applyThemeAndAccent() {
         try {
-            int color = android.graphics.Color.parseColor(selectedAccent);
-            binding.btnSave.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
-            binding.btnLogout.setBackgroundTintList(android.content.res.ColorStateList.valueOf(color));
+            int color = Color.parseColor(selectedAccent);
+            binding.btnSave.setBackgroundTintList(
+                    android.content.res.ColorStateList.valueOf(color));
+            binding.btnLogout.setBackgroundTintList(
+                    android.content.res.ColorStateList.valueOf(color));
         } catch (Exception ignored) {}
     }
 
@@ -307,16 +359,21 @@ public class ProfileActivity extends BaseActivity {
                 v.setAlpha(1.0f);
                 selectedAccentView = v;
                 selectedAccent = (String) v.getTag();
+                applyThemeAndAccent();
             });
             binding.llAccentColors.addView(circle);
         }
     }
 
-    private android.graphics.drawable.GradientDrawable getCircleDrawable(String hex) {
-        android.graphics.drawable.GradientDrawable d = new android.graphics.drawable.GradientDrawable();
-        d.setShape(android.graphics.drawable.GradientDrawable.OVAL);
-        try { d.setColor(android.graphics.Color.parseColor(hex)); } catch(Exception e){}
-        d.setStroke(3, android.graphics.Color.parseColor("#EAEAEA"));
+    private GradientDrawable getCircleDrawable(String hex) {
+        GradientDrawable d = new GradientDrawable();
+        d.setShape(GradientDrawable.OVAL);
+        try {
+            d.setColor(Color.parseColor(hex));
+        } catch(Exception e) {
+            d.setColor(Color.parseColor("#6C63FF"));
+        }
+        d.setStroke(3, Color.parseColor("#EAEAEA"));
         return d;
     }
 
@@ -327,7 +384,9 @@ public class ProfileActivity extends BaseActivity {
             if (selectedAccent.equals(c.getTag())) {
                 selectedAccentView = c;
                 c.setAlpha(1.0f);
-            } else c.setAlpha(0.3f);
+            } else {
+                c.setAlpha(0.3f);
+            }
         }
     }
 }

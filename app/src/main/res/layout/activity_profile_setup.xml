@@ -60,13 +60,14 @@
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                android:hint="Рост (см)">
+                android:hint="Рост (см) 100-250">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etHeight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:maxLength="3" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -77,13 +78,14 @@
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusTopStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                android:hint="Вес (кг)">
+                android:hint="Вес (кг) 20-300">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etWeight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:maxLength="3" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
@@ -94,13 +96,14 @@
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            android:hint="Возраст">
+            android:hint="Возраст 10-120">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="number"
+                android:maxLength="3" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView

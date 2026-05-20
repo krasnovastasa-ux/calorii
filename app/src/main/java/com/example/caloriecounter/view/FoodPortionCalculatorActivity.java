@@ -7,12 +7,21 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.caloriecounter.R;
 import com.example.caloriecounter.model.FoodLog;
+import com.example.caloriecounter.model.Recipe;
 import com.example.caloriecounter.repository.SupabaseRepository;
 
+import java.util.List;
+
 public class FoodPortionCalculatorActivity extends BaseActivity {
+
+    private static final String TAG = "FOOD_PORTION_CALC";
+
     private SupabaseRepository repo;
     private TextView tvRecipeName, tvPerServing, tvCalculated, tvMacrosCalc;
     private EditText etValue;
@@ -21,6 +30,9 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
 
     private String recipeId, recipeName, mealType, userId, selectedDate;
     private boolean isUserRecipe;
+
+    private List<Recipe.RecipeFood> recipeFoods;
+
     private int totalCal = 0, totalP = 0, totalF = 0, totalC = 0, totalGrams = 0;
 
     @Override
@@ -53,6 +65,7 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
         userId = getIntent().getStringExtra("userId");
         selectedDate = getIntent().getStringExtra("selected_date");
         isUserRecipe = getIntent().getBooleanExtra("is_user_recipe", false);
+
         tvRecipeName.setText(recipeName != null ? recipeName : "Рецепт");
     }
 
@@ -62,7 +75,9 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
 
         etValue.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { updatePreview(); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updatePreview();
+            }
             @Override public void afterTextChanged(Editable s) {}
         });
 
@@ -71,22 +86,40 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
 
     private void loadRecipeIngredients() {
         SupabaseRepository.RecipeFoodListCallback callback = new SupabaseRepository.RecipeFoodListCallback() {
-            @Override public void onSuccess(java.util.List<com.example.caloriecounter.model.Recipe.RecipeFood> foods) {
-                if (foods == null || foods.isEmpty()) { return; }
-                for (com.example.caloriecounter.model.Recipe.RecipeFood ing : foods) {
+            @Override
+            public void onSuccess(List<Recipe.RecipeFood> foods) {
+                if (foods == null || foods.isEmpty()) {
+                    Toast.makeText(FoodPortionCalculatorActivity.this,
+                            "Рецепт не содержит ингредиентов", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                recipeFoods = foods;
+
+                for (Recipe.RecipeFood ing : foods) {
                     totalCal += ing.getTotalCalories();
                     totalP += ing.getTotalProtein();
                     totalF += ing.getTotalFat();
                     totalC += ing.getTotalCarbs();
                     totalGrams += ing.grams;
                 }
+
                 etValue.setText(String.valueOf(totalGrams));
                 updatePreview();
             }
-            @Override public void onError(String msg) { }
+
+            @Override
+            public void onError(String msg) {
+                Toast.makeText(FoodPortionCalculatorActivity.this,
+                        "Ошибка загрузки: " + msg, Toast.LENGTH_SHORT).show();
+            }
         };
-        if (isUserRecipe) repo.fetchUserRecipeIngredients("eq." + recipeId, callback);
-        else repo.fetchRecipeFoods("eq." + recipeId, callback);
+
+        if (isUserRecipe) {
+            repo.fetchUserRecipeIngredients("eq." + recipeId, callback);
+        } else {
+            repo.fetchRecipeFoods("eq." + recipeId, callback);
+        }
     }
 
     private void updatePreview() {
@@ -107,18 +140,42 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
         tvPerServing.setText(String.format("~%d ккал / %s", finalCal, unitText));
 
         tvCalculated.setText(String.format("%d ккал", finalCal));
-        tvMacrosCalc.setText(String.format("Белки: %d г | Жиры: %d г | Углеводы: %d г", finalP, finalF, finalC));
+        tvMacrosCalc.setText(String.format("Белки: %d г | Жиры: %d г | Углеводы: %d г",
+                finalP, finalF, finalC));
     }
 
     private void saveRecipeToDiary() {
-        String valStr = etValue.getText().toString().trim();
-        if (valStr.isEmpty() || Double.parseDouble(valStr) <= 0) {
+        if (recipeFoods == null || recipeFoods.isEmpty()) {
+            Toast.makeText(this, "Ингредиенты ещё не загружены", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        double entered = Double.parseDouble(valStr);
+        String valStr = etValue.getText().toString().trim();
+        if (valStr.isEmpty()) {
+            etValue.setError("Введите значение");
+            etValue.requestFocus();
+            return;
+        }
+
+        double entered;
+        try {
+            entered = Double.parseDouble(valStr);
+        } catch (NumberFormatException e) {
+            etValue.setError("Некорректное число");
+            etValue.requestFocus();
+            return;
+        }
+
+        if (entered < 1 || entered > 10000) {
+            etValue.setError("Допустимо: 1-10000");
+            etValue.requestFocus();
+            return;
+        }
+
         boolean isGramsMode = (rgUnit.getCheckedRadioButtonId() == R.id.rbGrams);
-        double factor = (totalGrams > 0) ? (isGramsMode ? (entered / totalGrams) : entered) : 1.0;
+        double factor = (totalGrams > 0)
+                ? (isGramsMode ? (entered / totalGrams) : entered)
+                : 1.0;
 
         FoodLog log = new FoodLog();
         log.userId = userId;
@@ -132,12 +189,24 @@ public class FoodPortionCalculatorActivity extends BaseActivity {
         log.totalCarbs    = (int)Math.round(totalC * factor);
         log.logDate = selectedDate != null ? selectedDate : java.time.LocalDate.now().toString();
 
+        btnSave.setEnabled(false);
+        btnSave.setText("Сохранение...");
+
         repo.addLog(log, log.logDate, new SupabaseRepository.VoidCallback() {
-            @Override public void onSuccess() {
+            @Override
+            public void onSuccess() {
                 setResult(RESULT_OK);
                 finish();
             }
-            @Override public void onError(String m) {
+
+            @Override
+            public void onError(String m) {
+                runOnUiThread(() -> {
+                    btnSave.setEnabled(true);
+                    btnSave.setText("Сохранить");
+                    Toast.makeText(FoodPortionCalculatorActivity.this,
+                            "Ошибка: " + m, Toast.LENGTH_SHORT).show();
+                });
             }
         });
     }

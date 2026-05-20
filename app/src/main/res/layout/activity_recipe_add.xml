@@ -76,7 +76,7 @@
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            android:hint="Введите значение">
+            android:hint="Введите значение • 1-10000">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etValue"

@@ -76,14 +76,14 @@
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusTopStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            android:hint="Вес в граммах">
+            android:hint="Вес в граммах • 1-10000">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etGrams"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:maxLength="4" />
+                android:maxLength="5" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
