@@ -63,7 +63,7 @@ public class FoodSearchViewModel extends AndroidViewModel {
                         if (targetId != null) favoriteFoodIds.add(targetId);
                     }
                 }
-                Log.d(TAG, " Fav cache updated: " + favoriteFoodIds.size());
+                Log.d(TAG, "Fav cache updated: " + favoriteFoodIds.size());
                 favorites.postValue(list);
             }
             @Override public void onError(String m) { error.postValue(m); }
@@ -125,6 +125,5 @@ public class FoodSearchViewModel extends AndroidViewModel {
 
     public void saveLog(FoodLog log, String date, SupabaseRepository.VoidCallback cb) { repo.addLog(log, date, cb); }
 
-
-
+    public SupabaseRepository getRepo() { return repo; }
 }
