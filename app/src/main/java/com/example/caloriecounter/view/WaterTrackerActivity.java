@@ -375,4 +375,6 @@ public class WaterTrackerActivity extends BaseActivity {
         renderWeek();
     }
 
+
+
 }

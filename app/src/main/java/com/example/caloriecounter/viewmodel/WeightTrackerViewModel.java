@@ -81,19 +81,15 @@ public class WeightTrackerViewModel extends AndroidViewModel {
         }
         loading.setValue(true);
 
-        Log.d("WEIGHT_SAVE", "Saving weight: " + weight + " for date: " + selectedDate);
-
         repo.saveOrUpdateWeightLog(userId, weight, selectedDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
                 new SupabaseRepository.VoidCallback() {
                     @Override
                     public void onSuccess() {
-                        Log.d("WEIGHT_SAVE", "Weight log saved");
                         updateProfileAndPrefs(weight);
                     }
                     @Override
                     public void onError(String msg) {
                         if (msg != null && (msg.contains("23505") || msg.contains("duplicate") || msg.contains("409"))) {
-                            Log.d("WEIGHT_SAVE", "Entry already exists, updating via PATCH...");
 
                             final double finalWeight = weight;
 

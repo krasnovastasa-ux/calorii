@@ -8,8 +8,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
 
 public class SupabaseClient {
-    private static final String SUPABASE_URL = "https://norhulutccpjkoghrdwf.supabase.co/";
-    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5vcmh1bHV0Y2NwamtvZ2hyZHdmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyODU2NzIsImV4cCI6MjA5Mzg2MTY3Mn0.oIArsU5aVN6DEGM4DW0RYDqgFLO1w_8wXXalrWNzYQs";
+    private static final String SUPABASE_URL = "https://ktwwknqtjloudktzvlwl.supabase.co/";
+    private static final String SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0d3drbnF0amxvdWRrdHp2bHdsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzODMyMTgsImV4cCI6MjEwODk1OTIxOH0.FdEN1IbKqXALkQqrk9IKC5ZKZnAWvSEWOjDvvoeNThk";
 
     private static SupabaseApi api;
 

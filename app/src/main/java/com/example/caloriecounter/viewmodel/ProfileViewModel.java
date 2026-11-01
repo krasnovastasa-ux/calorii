@@ -48,11 +48,37 @@ public class ProfileViewModel extends AndroidViewModel {
         data.accentColor = accentColor;
 
         repo.updateProfile(data, new SupabaseRepository.VoidCallback() {
-            @Override public void onSuccess() {
+            @Override
+            public void onSuccess() {
+                String today = java.time.LocalDate.now().toString();
+
+                repo.saveOrUpdateWeightLog(userId, weight, today,
+                        new SupabaseRepository.VoidCallback() {
+                            @Override
+                            public void onSuccess() {
+                                android.util.Log.d(
+                                        "PROFILE_WEIGHT",
+                                        "Today's weight log saved: " + weight
+                                );
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                android.util.Log.e(
+                                        "PROFILE_WEIGHT",
+                                        "Failed to save weight log: " + message
+                                );
+                            }
+                        });
+
                 profileSaved.postValue(true);
                 profileUpdatedSignal.postValue(System.currentTimeMillis());
             }
-            @Override public void onError(String m) { error.postValue(m); }
+
+            @Override
+            public void onError(String m) {
+                error.postValue(m);
+            }
         });
     }
 }

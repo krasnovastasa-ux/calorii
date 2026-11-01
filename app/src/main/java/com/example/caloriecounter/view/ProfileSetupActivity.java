@@ -123,13 +123,12 @@ public class ProfileSetupActivity extends BaseActivity {
                 String goalDisplay = goalsArr[goalPos];
                 String lifeDisplay = lifestylesArr[lifePos];
 
-                String goalKey = goalDisplay.equals("Lose") ? "lose" :
-                        goalDisplay.equals("Gain") ? "gain" : "maintain";
-                String lifeKey = lifeDisplay.equals("Sedentary") ? "sedentary"
-                        : lifeDisplay.equals("Light activity") ? "light"
-                        : lifeDisplay.equals("Moderate activity") ? "moderate"
-                        : lifeDisplay.equals("High activity") ? "active"
-                        : "very_active";
+                String goalKey = goalDisplay.equals("Похудеть") ? "lose" :
+                        goalDisplay.equals("Набрать") ? "gain" : "maintain";
+                String lifeKey = lifeDisplay.equals("Сидячий") ? "sedentary" :
+                        lifeDisplay.equals("Лёгкая активность") ? "light" :
+                                lifeDisplay.equals("Средняя активность") ? "moderate" :
+                                        lifeDisplay.equals("Высокая активность") ? "active" : "very_active";
 
                 Log.d(TAG, "Saving profile: " + name + ", " + weight + "kg, goal=" + goalKey);
 
@@ -196,18 +195,18 @@ public class ProfileSetupActivity extends BaseActivity {
         if (w > 0) binding.etWeight.setText(String.valueOf(w));
         if (a > 0) binding.etAge.setText(String.valueOf(a));
 
-        binding.spinnerGender.setSelection(findIndex(gendersArr,
-                prefs.getString("gender", "Female")));
+        binding.spinnerGender.setSelection(findIndex(gendersArr, prefs.getString("gender", "Женский")));
 
-        String goalPref = prefs.getString("goal", "maintain");
-        String goalDisplay = goalPref.equals("lose") ? "Lose" :
-                goalPref.equals("gain") ? "Gain" : "Maintain";
+        String savedGoal = prefs.getString("goal", "maintain");
+        String goalDisplay = savedGoal.equals("lose") ? "Похудеть" :
+                savedGoal.equals("gain") ? "Набрать" : "Поддерживать";
         binding.spinnerGoal.setSelection(findIndex(goalsArr, goalDisplay));
 
-        String lifePref = prefs.getString("lifestyle", "moderate");
-        String lifeDisplay = lifePref.equals("sedentary") ? "Sedentary" :
-                lifePref.equals("light") ? "Light activity" :
-                        lifePref.equals("moderate") ? "Moderate activity" : "High activity";
+        String savedLifestyle = prefs.getString("lifestyle", "moderate");
+        String lifeDisplay = savedLifestyle.equals("sedentary") ? "Сидячий" :
+                savedLifestyle.equals("light") ? "Лёгкая активность" :
+                        savedLifestyle.equals("moderate") ? "Средняя активность" :
+                                savedLifestyle.equals("active") ? "Высокая активность" : "Очень высокая активность";
         binding.spinnerLifestyle.setSelection(findIndex(lifestylesArr, lifeDisplay));
     }
 
@@ -223,9 +222,12 @@ public class ProfileSetupActivity extends BaseActivity {
 
     private void observeProfileData() {
         viewModel.getProfileData().observe(this, profile -> {
-            if (profile == null) return;
+            if (profile == null) {
+                Log.w(TAG, "Profile is null");
+                return;
+            }
 
-            Log.d(TAG, "Profile from DB: name='" + profile.name + "'");
+            Log.d(TAG, "Profile loaded: name='" + profile.name + "'");
 
             if (profile.name != null && !profile.name.isEmpty()) {
                 binding.etName.setText(profile.name);
@@ -243,14 +245,15 @@ public class ProfileSetupActivity extends BaseActivity {
                 binding.spinnerGender.setSelection(findIndex(gendersArr, profile.gender));
             }
             if (profile.goal != null) {
-                String goalDisplay = profile.goal.equals("lose") ? "Lose" :
-                        profile.goal.equals("gain") ? "Gain" : "Maintain";
+                String goalDisplay = profile.goal.equals("lose") ? "Похудеть" :
+                        profile.goal.equals("gain") ? "Набрать" : "Поддерживать";
                 binding.spinnerGoal.setSelection(findIndex(goalsArr, goalDisplay));
             }
             if (profile.lifestyle != null) {
-                String lifeDisplay = profile.lifestyle.equals("sedentary") ? "Sedentary" :
-                        profile.lifestyle.equals("light") ? "Light activity" :
-                                profile.lifestyle.equals("moderate") ? "Moderate activity" : "High activity";
+                String lifeDisplay = profile.lifestyle.equals("sedentary") ? "Сидячий" :
+                        profile.lifestyle.equals("light") ? "Лёгкая активность" :
+                                profile.lifestyle.equals("moderate") ? "Средняя активность" :
+                                        profile.lifestyle.equals("active") ? "Высокая активность" : "Очень высокая активность";
                 binding.spinnerLifestyle.setSelection(findIndex(lifestylesArr, lifeDisplay));
             }
 
@@ -264,5 +267,4 @@ public class ProfileSetupActivity extends BaseActivity {
                     .putString("lifestyle", profile.lifestyle)
                     .apply();
         });
-    }
-}
+    }}

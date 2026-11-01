@@ -154,7 +154,39 @@ public class SupabaseRepository {
             }
         });
     }
+    public void fetchAllFoodLogs(String userId, LogListCallback cb) {
+        String token = prefs.getString(KEY_TOKEN, null);
 
+        if (token == null || userId == null || userId.isEmpty()) {
+            cb.onError("No session");
+            return;
+        }
+
+        api.getLogs("Bearer " + token, "eq." + userId)
+                .enqueue(new Callback<List<FoodLog>>() {
+                    @Override
+                    public void onResponse(
+                            Call<List<FoodLog>> call,
+                            Response<List<FoodLog>> response
+                    ) {
+                        if (handleTokenError(response, cb)) return;
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            cb.onSuccess(response.body());
+                        } else {
+                            cb.onError(parseError(response));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<List<FoodLog>> call,
+                            Throwable t
+                    ) {
+                        cb.onError("Network: " + t.getMessage());
+                    }
+                });
+    }
     public void fetchLogsForDate(String date, LogListCallback cb) {
         String token = prefs.getString(KEY_TOKEN, null);
         String userId = prefs.getString(KEY_USER_ID, null);
@@ -176,6 +208,41 @@ public class SupabaseRepository {
                 cb.onError("Network: " + t.getMessage());
             }
         });
+    }
+
+    public void fetchAllFoodLogs(LogListCallback cb) {
+        String token = prefs.getString(KEY_TOKEN, null);
+        String userId = prefs.getString(KEY_USER_ID, null);
+
+        if (token == null || userId == null) {
+            cb.onError("Нет сессии");
+            return;
+        }
+
+        api.getLogs("Bearer " + token, "eq." + userId)
+                .enqueue(new Callback<List<FoodLog>>() {
+                    @Override
+                    public void onResponse(
+                            Call<List<FoodLog>> call,
+                            Response<List<FoodLog>> response
+                    ) {
+                        if (handleTokenError(response, cb)) return;
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            cb.onSuccess(response.body());
+                        } else {
+                            cb.onError(parseError(response));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<List<FoodLog>> call,
+                            Throwable t
+                    ) {
+                        cb.onError("Ошибка сети: " + t.getMessage());
+                    }
+                });
     }
 
     public void addLog(FoodLog log, String date, VoidCallback cb) {
@@ -685,6 +752,37 @@ public class SupabaseRepository {
         });
     }
 
+    public void saveTodayWeightLog(String userId, double weight, String date,
+                                   VoidCallback cb) {
+        fetchWeightLogs(userId, new WeightLogListCallback() {
+            @Override
+            public void onSuccess(List<WeightLog> logs) {
+                WeightLog todayLog = null;
+
+                if (logs != null) {
+                    for (WeightLog log : logs) {
+                        if (date.equals(log.logDate)) {
+                            todayLog = log;
+                            break;
+                        }
+                    }
+                }
+
+                if (todayLog != null) {
+                    // Запись за сегодня уже есть — обновляем её
+                    updateWeightLogById(todayLog.id, weight, cb);
+                } else {
+                    // Записи за сегодня нет — создаём новую
+                    saveOrUpdateWeightLog(userId, weight, date, cb);
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                cb.onError(message);
+            }
+        });
+    }
     public void updateProfileWeight(String userId, double weight, VoidCallback cb) {
         String token = prefs.getString("token", null);
         if (token == null) { cb.onError("No session"); return; }
