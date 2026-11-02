@@ -3,192 +3,266 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_primary"
-    android:padding="16dp"
+    android:background="#F4F3F7"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:layout_margin="20dp"
+        android:padding="20dp"
+        android:background="@drawable/profile_card"
+        android:elevation="0dp">
 
-        <TextView
-            android:text="Профиль"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <!-- Верхняя панель -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp">
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/profile_circle"
+                android:src="@android:drawable/ic_media_previous"
+                android:contentDescription="Назад"
+                android:padding="10dp"
+                android:layout_alignParentStart="true"
+                android:scaleType="centerInside"
+                android:elevation="0dp"
+                app:tint="#7041E8"
+                android:backgroundTint="#FFFFFF"/>
+
+        </RelativeLayout>
+
+        <!-- Аватар -->
+        <FrameLayout
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="12dp">
+
+            <ImageView
+                android:id="@+id/ivAvatar"
+                android:layout_width="112dp"
+                android:layout_height="112dp"
+                android:layout_gravity="center"
+                android:background="@drawable/profile_avatar_bg"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/kot"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="Выбрать фотографию профиля"/>
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/tvEmail"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="20dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-
-        <TextView
-            android:text="Акцентный цвет"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <LinearLayout
-            android:id="@+id/llAccentColors"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginTop="8dp"
+            android:text="email@gmail.com"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#24213D"/>
 
+
+        <!-- Акцентный цвет -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Акцентный цвет"
+            android:textColor="#292440"
+            android:textStyle="bold"
+            android:layout_marginTop="32dp"
+            android:textSize="14sp"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="18dp">
+
+            <LinearLayout
+                android:id="@+id/llAccentColors"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"/>
+        </HorizontalScrollView>
+
+        <!-- Имя -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="10dp"
+            android:hint="Имя"
             app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            android:hint="Имя">
+            app:boxCornerRadiusTopStart="22dp"
+            app:boxCornerRadiusTopEnd="22dp"
+            app:boxCornerRadiusBottomStart="22dp"
+            app:boxCornerRadiusBottomEnd="22dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textPersonName" />
+                android:inputType="textPersonName"
+                android:textColor="#282440"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Рост и вес -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="10dp">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="5dp"
+                android:hint="Рост (см)"
                 app:boxBackgroundMode="outline"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                android:hint="Рост (см) 100-250">
+                app:boxCornerRadiusTopStart="22dp"
+                app:boxCornerRadiusTopEnd="22dp"
+                app:boxCornerRadiusBottomStart="22dp"
+                app:boxCornerRadiusBottomEnd="22dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etHeight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:maxLength="3" />
+                    android:maxLength="3"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="5dp"
+                android:hint="Вес (кг)"
                 app:boxBackgroundMode="outline"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                android:hint="Вес (кг) 20-300">
+                app:boxCornerRadiusTopStart="22dp"
+                app:boxCornerRadiusTopEnd="22dp"
+                app:boxCornerRadiusBottomStart="22dp"
+                app:boxCornerRadiusBottomEnd="22dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etWeight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:maxLength="3" />
+                    android:maxLength="3"/>
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
+        <!-- Возраст -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="10dp"
+            android:hint="Возраст"
             app:boxBackgroundMode="outline"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            android:hint="Возраст 10-120">
+            app:boxCornerRadiusTopStart="22dp"
+            app:boxCornerRadiusTopEnd="22dp"
+            app:boxCornerRadiusBottomStart="22dp"
+            app:boxCornerRadiusBottomEnd="22dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAge"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:maxLength="3" />
+                android:maxLength="3"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Пол -->
         <TextView
-            android:text="Пол"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="Пол"
+            android:textColor="#77718F"
+            android:textSize="12sp"
+            android:layout_marginTop="5dp"/>
 
         <Spinner
             android:id="@+id/spinnerGender"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="52dp"
+            android:background="@drawable/profile_spinner"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="8dp"/>
 
+        <!-- Цель -->
         <TextView
-            android:text="Цель"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="Цель"
+            android:textColor="#77718F"
+            android:textSize="12sp"/>
 
         <Spinner
             android:id="@+id/spinnerGoal"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="52dp"
+            android:background="@drawable/profile_spinner"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="8dp"/>
 
+        <!-- Образ жизни -->
         <TextView
-            android:text="Образ жизни"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="Образ жизни"
+            android:textColor="#77718F"
+            android:textSize="12sp"/>
 
         <Spinner
             android:id="@+id/spinnerLifestyle"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="32dp" />
+            android:layout_height="52dp"
+            android:background="@drawable/profile_spinner"
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="20dp"/>
 
+        <!-- Сохранение -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Сохранить изменения"
-            app:cornerRadius="16dp"
-            android:backgroundTint="@color/primary"
-            android:layout_marginBottom="16dp" />
+            android:text="✓  Сохранить изменения"
+            android:textSize="14sp"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#7441ED"
+            app:cornerRadius="28dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
             android:text="Выйти из аккаунта"
-            android:textColor="#FFFFFFFF"
-            app:cornerRadius="16dp"
-            android:backgroundTint="#FFB71C1C"
-            style="@style/Widget.MaterialComponents.Button" />
+            android:textAllCaps="false"
+            android:textColor="#D64C65"
+            app:cornerRadius="24dp"
+            app:backgroundTint="#FFF0F3"
+            style="@style/Widget.MaterialComponents.Button"/>
 
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="12dp"
+            android:visibility="gone"/>
+
     </LinearLayout>
 </ScrollView>
