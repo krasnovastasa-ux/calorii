@@ -63,6 +63,24 @@ public class LoginActivity extends BaseActivity {
             });
         });
 
+
+        binding.tvAgreement.setOnClickListener(v -> {
+
+            android.webkit.WebView webView = new android.webkit.WebView(this);
+
+            webView.loadUrl("file:///android_asset/agreement.html");
+
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Условия использования")
+                    .setView(webView)
+                    .setPositiveButton("Понятно", (dialog, which) -> {
+                        webView.destroy();
+                    })
+                    .show();
+
+        });
+
+
         binding.btnRegister.setOnClickListener(v -> {
             String email = binding.etEmail.getText().toString().trim();
             String password = binding.etPassword.getText().toString().trim();
