@@ -41,6 +41,7 @@ public class CalendarActivity extends BaseActivity {
         repo = new SupabaseRepository(this);
         todayStr = dayFormat.format(today.getTime());
 
+        updateToggleText();
         updateTitle();
         render();
 
@@ -76,7 +77,7 @@ public class CalendarActivity extends BaseActivity {
     }
 
     private void updateToggleText() {
-        binding.btnToggleView.setText(isYearView ? "Год" : "Месяц");
+        binding.btnToggleView.setText(isYearView ? "Месяц  ⌄" : "Год  ⌄");
         binding.daysHeader.setVisibility(isYearView ? View.GONE : View.VISIBLE);
         binding.monthGrid.setVisibility(isYearView ? View.GONE : View.VISIBLE);
         binding.yearScroll.setVisibility(isYearView ? View.VISIBLE : View.GONE);
@@ -98,7 +99,7 @@ public class CalendarActivity extends BaseActivity {
 
         float density = getResources().getDisplayMetrics().density;
         int rows = (int) Math.ceil((firstDay + daysInMonth) / 7.0);
-        int cellHeight = (int) (70 * density);
+        int cellHeight = (int) (68 * density);
 
         for (int r = 0; r < rows; r++) {
             LinearLayout row = new LinearLayout(this);
@@ -109,7 +110,9 @@ public class CalendarActivity extends BaseActivity {
             for (int c = 0; c < 7; c++) {
                 LinearLayout cell = new LinearLayout(this);
                 cell.setGravity(Gravity.CENTER);
-                cell.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+                cellParams.setMargins(ActivityUi.dp(this,2),ActivityUi.dp(this,3),ActivityUi.dp(this,2),ActivityUi.dp(this,3));
+                cell.setLayoutParams(cellParams);
                 cell.setOrientation(LinearLayout.VERTICAL);
                 cell.setPadding(4, 4, 4, 4);
 
@@ -146,8 +149,8 @@ public class CalendarActivity extends BaseActivity {
     private void applyCellStyle(LinearLayout cell, String dateStr, TextView dayTv, TextView calTv) {
         GradientDrawable bg = new GradientDrawable();
         bg.setShape(GradientDrawable.RECTANGLE);
-        bg.setCornerRadius(8 * getResources().getDisplayMetrics().density);
-        bg.setStroke(1, ContextCompat.getColor(this, R.color.text_secondary));
+        bg.setCornerRadius(16 * getResources().getDisplayMetrics().density);
+        bg.setStroke(1, androidx.core.graphics.ColorUtils.setAlphaComponent(ActivityPalette.muted(this),55));
 
         if (dateStr.equals(todayStr)) {
             String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
@@ -160,7 +163,7 @@ public class CalendarActivity extends BaseActivity {
 
             cell.setTag("accent_circle");
         } else {
-            bg.setColor(Color.WHITE);
+            bg.setColor(ActivityPalette.surface(this));
             dayTv.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
             calTv.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
         }
@@ -236,7 +239,7 @@ public class CalendarActivity extends BaseActivity {
                             circle.setTextColor(Color.WHITE); circle.setTypeface(null, android.graphics.Typeface.BOLD);
                             circle.setTag("accent_circle");
                         } else {
-                            bg.setColor(Color.WHITE);
+                            bg.setColor(ActivityPalette.surface(this));
                             circle.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
                         }
                         bg.setStroke(1, ContextCompat.getColor(this, R.color.text_secondary));
@@ -313,74 +316,56 @@ public class CalendarActivity extends BaseActivity {
         });
     }
 
-    private void buildDayDialog(String date, int day, List<FoodLog> logs) {
-        String accentHex = com.example.caloriecounter.utils.ThemeUtils.getAccent(this);
-        int accentColor = android.graphics.Color.parseColor(accentHex);
-
-        if (logs.isEmpty()) {
-            AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setTitle(day + " " + monthFormat.format(currentCal.getTime()))
-                    .setMessage("Записей за этот день нет")
-                    .setPositiveButton("Закрыть", null)
-                    .create();
-            dialog.show();
-            try { dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor); } catch (Exception ignored) {}
-            return;
+    private int dp(int n){return ActivityUi.dp(this,n);}
+    private TextView dayText(String value,int size,boolean bold){
+        TextView v=new TextView(this);v.setText(value);v.setTextSize(size);v.setTextColor(ActivityPalette.text(this));
+        if(bold)v.setTypeface(null,android.graphics.Typeface.BOLD);return v;
+    }
+    private void buildDayDialog(String date,int day,List<FoodLog> logs){
+        if(isFinishing()||isDestroyed())return;
+        int accent=ActivityPalette.accent(this);
+        int cal=0,protein=0,fat=0,carbs=0,sugar=0;
+        Map<String,List<FoodLog>> meals=new LinkedHashMap<>();
+        for(String key:new String[]{"Завтрак","Обед","Ужин","Перекус"})meals.put(key,new ArrayList<>());
+        if(logs!=null)for(FoodLog log:logs){
+            if(log==null)continue;
+            cal+=log.totalCalories;protein+=log.totalProtein;fat+=log.totalFat;carbs+=log.totalCarbs;sugar+=log.totalSugar;
+            String key=meals.containsKey(log.mealType)?log.mealType:"Перекус";meals.get(key).add(log);
         }
-
-        Map<String, List<FoodLog>> meals = new LinkedHashMap<>();
-        meals.put("Завтрак", new ArrayList<>()); meals.put("Обед", new ArrayList<>());
-        meals.put("Ужин", new ArrayList<>()); meals.put("Перекус", new ArrayList<>());
-        int totalCal=0, pro=0, fat=0, carb=0, sugar=0, fiber=0;
-        for (FoodLog l : logs) {
-            String t = l.mealType!=null?l.mealType:"Перекус"; meals.get(t).add(l);
-            totalCal+=l.totalCalories; pro+=l.totalProtein; fat+=l.totalFat; carb+=l.totalCarbs; sugar+=l.totalSugar; fiber+=l.totalFiber;
+        android.content.SharedPreferences p=repo.getPrefs();
+        int weight=p.getInt("weight",0),height=p.getInt("height",0),age=p.getInt("age",0);
+        int goal=weight>0&&height>0&&age>0?com.example.caloriecounter.utils.NutritionCalculator.calculateTargetCalories(weight,height,age,p.getString("gender","Женский"),p.getString("lifestyle","sedentary"),p.getString("goal","maintain")):0;
+        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(16),dp(16),dp(16),dp(16));root.setBackground(ActivityUi.shape(ActivityPalette.surface(this),dp(26)));
+        LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
+        TextView title=dayText(java.time.LocalDate.parse(date).format(java.time.format.DateTimeFormatter.ofPattern("d MMMM yyyy",new Locale("ru"))),20,true);title.setGravity(Gravity.CENTER);header.addView(title,new LinearLayout.LayoutParams(0,-2,1));
+        TextView cross=dayText("×",30,false);cross.setTextColor(accent);cross.setGravity(Gravity.CENTER);header.addView(cross,new LinearLayout.LayoutParams(dp(36),dp(44)));root.addView(header);
+        TextView subtitle=dayText(goal>0?"Калории: "+cal+" из "+goal+" ккал":"Калории: "+cal+" ккал",14,false);subtitle.setTextColor(ActivityPalette.muted(this));subtitle.setGravity(Gravity.CENTER);root.addView(subtitle);
+        if(goal>0){
+            LinearLayout progressRow=new LinearLayout(this);progressRow.setGravity(Gravity.CENTER_VERTICAL);progressRow.setPadding(0,dp(14),0,dp(14));
+            android.widget.ProgressBar bar=new android.widget.ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);bar.setMax(1000);bar.setProgress((int)Math.min(1000,cal*1000L/goal));bar.setProgressTintList(android.content.res.ColorStateList.valueOf(accent));bar.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(androidx.core.graphics.ColorUtils.setAlphaComponent(ActivityPalette.muted(this),40)));progressRow.addView(bar,new LinearLayout.LayoutParams(0,dp(16),1));
+            TextView percent=dayText(Math.round(cal*100.0/goal)+"%",14,true);percent.setPadding(dp(12),0,0,0);progressRow.addView(percent);root.addView(progressRow);
         }
-
-        ScrollView sv = new ScrollView(this);
-        LinearLayout content = new LinearLayout(this); content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(40, 32, 40, 32); content.setBackgroundColor(ContextCompat.getColor(this, R.color.bg_primary));
-
-        TextView title = new TextView(this); title.setText(day + " " + monthFormat.format(currentCal.getTime()));
-        title.setTextSize(20); title.setTypeface(null, android.graphics.Typeface.BOLD);
-        title.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); title.setGravity(Gravity.CENTER); title.setPadding(0,0,0,20); content.addView(title);
-
-        TextView sum = new TextView(this); sum.setText(String.format(Locale.getDefault(),
-                "Калории: %d ккал\n\nБелки: %d г | Жиры: %d г | Углеводы: %d г\nСахар: %d г | Клетчатка: %d г",
-                totalCal, pro, fat, carb, sugar, fiber));
-        sum.setTextSize(14);
-        sum.setTextColor(accentColor);
-        sum.setPadding(0,0,0,24); sum.setGravity(Gravity.CENTER); sum.setTypeface(null, android.graphics.Typeface.BOLD); content.addView(sum);
-
-        for (Map.Entry<String, List<FoodLog>> e : meals.entrySet()) {
-            if (!e.getValue().isEmpty()) {
-                TextView mt = new TextView(this); mt.setText(e.getKey()); mt.setTextSize(16);
-                mt.setTypeface(null, android.graphics.Typeface.BOLD); mt.setTextColor(ContextCompat.getColor(this, R.color.text_primary));
-                mt.setPadding(0,16,0,8); content.addView(mt);
-                int mc=0;
-
-                for (FoodLog l : e.getValue()) {
-                    mc += l.totalCalories;
-                    String name = (l.foodName != null ? l.foodName : "Продукт");
-                    TextView it = new TextView(this);
-                    it.setText(name + " — " + l.grams + " г (" + l.totalCalories + " ккал)");
-                    it.setTextSize(14); it.setTextColor(ContextCompat.getColor(this, R.color.text_secondary)); it.setPadding(12,4,12,4);
-                    content.addView(it);
-                }
-
-                TextView tot = new TextView(this); tot.setText("Итого: "+mc+" ккал"); tot.setTextSize(13);
-                tot.setTypeface(null, android.graphics.Typeface.BOLD);
-                tot.setTextColor(accentColor);
-                tot.setPadding(12,6,12,12); tot.setGravity(Gravity.END); content.addView(tot);
-
-                View div = new View(this); div.setBackgroundColor(ContextCompat.getColor(this, R.color.text_secondary));
-                div.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 1)); div.setAlpha(0.3f); content.addView(div);
-            }
+        LinearLayout macros=new LinearLayout(this);String[] labels={"Белки","Жиры","Углеводы","Сахар"};int[] values={protein,fat,carbs,sugar};
+        for(int i=0;i<4;i++){TextView item=dayText(labels[i]+"\n"+values[i]+" г",12,false);item.setGravity(Gravity.CENTER);item.setPadding(0,dp(12),0,dp(12));item.setBackground(ActivityUi.shape(ActivityPalette.background(this),dp(16)));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,-2,1);lp.setMargins(dp(3),dp(6),dp(3),dp(10));macros.addView(item,lp);}root.addView(macros);
+        ScrollView scroll=new ScrollView(this);LinearLayout cards=new LinearLayout(this);cards.setOrientation(1);scroll.addView(cards);
+        for(Map.Entry<String,List<FoodLog>> meal:meals.entrySet()){
+            if(meal.getValue().isEmpty())continue;
+            LinearLayout card=new LinearLayout(this);card.setGravity(Gravity.CENTER_VERTICAL);card.setBackground(ActivityUi.shape(ActivityPalette.background(this),dp(18)));LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,-2);lp.topMargin=dp(8);cards.addView(card,lp);
+            View strip=new View(this);strip.setBackgroundColor(accent);card.addView(strip,new LinearLayout.LayoutParams(dp(4),dp(76)));
+            LinearLayout body=new LinearLayout(this);body.setOrientation(1);body.setPadding(dp(14),dp(12),dp(14),dp(12));card.addView(body,new LinearLayout.LayoutParams(0,-2,1));
+            LinearLayout top=new LinearLayout(this);top.addView(dayText(meal.getKey(),16,true),new LinearLayout.LayoutParams(0,-2,1));int sum=0;StringBuilder foods=new StringBuilder();for(FoodLog log:meal.getValue()){sum+=log.totalCalories;if(foods.length()>0)foods.append("\n");foods.append(log.foodName==null?"Продукт":log.foodName);}top.addView(dayText(sum+" ккал",14,false));body.addView(top);TextView names=dayText(foods.toString(),13,false);names.setTextColor(ActivityPalette.muted(this));names.setPadding(0,dp(6),0,0);body.addView(names);
         }
-        sv.addView(content);
-
-        AlertDialog dialog = new AlertDialog.Builder(this).setView(sv).setPositiveButton("Закрыть", null).create();
-        dialog.show();
-        try { dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setTextColor(accentColor); } catch (Exception ignored) {}
+        if(logs==null||logs.isEmpty()){TextView empty=dayText("Записей за этот день нет",15,false);empty.setPadding(0,dp(20),0,dp(20));cards.addView(empty);}
+        root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+        android.widget.Button close=new android.widget.Button(this);close.setText("Закрыть");close.setAllCaps(false);close.setTextColor(Color.WHITE);close.setBackground(ActivityUi.shape(accent,dp(20)));LinearLayout.LayoutParams closeLp=new LinearLayout.LayoutParams(-1,dp(48));closeLp.topMargin=dp(16);root.addView(close,closeLp);
+        AlertDialog dialog=new AlertDialog.Builder(this).setView(root).create();cross.setOnClickListener(v->dialog.dismiss());close.setOnClickListener(v->dialog.dismiss());dialog.show();
+        if(dialog.getWindow()!=null){dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);dialog.getWindow().setLayout(getResources().getDisplayMetrics().widthPixels-dp(24),(int)(getResources().getDisplayMetrics().heightPixels*0.78));}
+    }
+    @Override protected void onResume(){super.onResume();if(binding!=null)binding.getRoot().post(this::styleCalendarButtons);}
+    private void styleCalendarButtons(){
+        int accent=ActivityPalette.accent(this);
+        for(com.google.android.material.button.MaterialButton b:new com.google.android.material.button.MaterialButton[]{binding.btnPrev,binding.btnNext,binding.btnToday,binding.btnToggleView}){
+            b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ActivityPalette.surface(this)));b.setTextColor(accent);b.setCornerRadius(dp(16));b.setStrokeWidth(dp(1));b.setStrokeColor(android.content.res.ColorStateList.valueOf(androidx.core.graphics.ColorUtils.setAlphaComponent(accent,120)));b.setAllCaps(false);
+        }
     }
 }

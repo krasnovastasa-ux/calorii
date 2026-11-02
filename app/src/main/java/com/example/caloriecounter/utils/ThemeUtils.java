@@ -91,6 +91,8 @@ public class ThemeUtils {
 
         if ("accent_circle".equals(tag) && view instanceof TextView) {
             view.setBackgroundResource(R.drawable.circle_selected);
+            view.setBackgroundTintList(ColorStateList.valueOf(color));
+            view.getBackground().mutate();
             ((TextView) view).setTextColor(Color.WHITE);
             if (view.getBackground() instanceof GradientDrawable) {
                 ((GradientDrawable) view.getBackground()).setColor(color);

@@ -1,0 +1,7 @@
+<resources>
+    <color name="bg_primary">#121218</color>
+    <color name="app_surface">#22222D</color>
+    <color name="text_primary">#F0EFF7</color>
+    <color name="text_secondary">#B5B3C5</color>
+    <color name="text_default">#F0EFF7</color>
+</resources>

@@ -6,6 +6,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -47,13 +48,21 @@ public class WaterTrackerActivity extends BaseActivity {
     private static final int REMINDER_REQUEST_CODE = 100;
     private static final int ONE_TIME_REMINDER_REQUEST_CODE = 101;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 102;
+
     private static final int DEFAULT_REMINDER_INTERVAL = 120;
     private static final int DEFAULT_WEIGHT = 70;
     private static final int WEIGHT_TO_WATER_FACTOR = 30;
+    private static final int DEFAULT_GOAL_ML = 2000;
+
     private static final long ONE_MINUTE_MS = 60_000L;
 
     private static final String[] RU_DAYS = {"Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"};
 
+    private static final String COLOR_AMOUNT_TEXT = "#212121";
+    private static final String COLOR_DELETE_TEXT = "#FF6B6B";
+    private static final String COLOR_DIVIDER = "#EAEAEA";
+
+    private boolean logsExpanded = true;
     private ActivityWaterTrackerBinding binding;
     private SharedPreferences prefs;
     private SupabaseRepository repo;
@@ -61,7 +70,7 @@ public class WaterTrackerActivity extends BaseActivity {
     private String userId;
     private LocalDate selectedDate;
 
-    private int currentGoal = 2000;
+    private int currentGoal = DEFAULT_GOAL_ML;
 
     private final Map<String, List<FoodLog>> allLogsByDate = new HashMap<>();
     private boolean isDataLoaded;
@@ -71,6 +80,11 @@ public class WaterTrackerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityWaterTrackerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        if (savedInstanceState != null) logsExpanded = savedInstanceState.getBoolean("water_logs_expanded", true);
+        binding.waterLogsHeader.setOnClickListener(v -> {
+            logsExpanded = !logsExpanded;
+            updateSelectedDayUI();
+        });
 
         prefs = getSharedPreferences(WATER_PREFS, MODE_PRIVATE);
         SharedPreferences authPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -86,7 +100,7 @@ public class WaterTrackerActivity extends BaseActivity {
         currentGoal = prefs.getInt(KEY_GOAL,
                 authPrefs.getInt("weight", DEFAULT_WEIGHT) * WEIGHT_TO_WATER_FACTOR);
 
-        binding.btnAddWater.setOnClickListener(v -> addWater());
+        binding.btnAddWater.setOnClickListener(v -> showAddWaterDialog());
         binding.btnReminderSettings.setOnClickListener(v -> showReminderDialog());
         binding.btnToday.setOnClickListener(v -> {
             selectedDate = LocalDate.now();
@@ -323,89 +337,100 @@ public class WaterTrackerActivity extends BaseActivity {
         }
         binding.weekContainer.removeAllViews();
 
-        int sizePx = (int) (49 * getResources().getDisplayMetrics().density);
-        LocalDate today = LocalDate.now();
-        LocalDate monday = today.with(DayOfWeek.MONDAY);
+        int available = binding.weekContainer.getWidth();
+        if (available <= 0) { binding.weekContainer.post(this::renderWeek); return; }
+        int sizePx = Math.min(ActivityUi.dp(this, 44), Math.max(1, available / 7 - ActivityUi.dp(this, 4)));
+        LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
 
         for (int i = 0; i < 7; i++) {
             LocalDate date = monday.plusDays(i);
-            String dateStr = date.toString();
-            boolean isSelected = dateStr.equals(selectedDate.toString());
-
-            LinearLayout item = new LinearLayout(this);
-            item.setOrientation(LinearLayout.VERTICAL);
-            item.setGravity(Gravity.CENTER_HORIZONTAL);
-            item.setPadding(4, 4, 4, 4);
-            item.setClickable(true);
-            item.setOnClickListener(v -> {
-                selectedDate = date;
-                renderWeek();
-                updateSelectedDayUI();
-            });
-
-            TextView circle = new TextView(this);
-            circle.setText(String.valueOf(date.getDayOfMonth()));
-            circle.setTextSize(15);
-            circle.setTextColor(isSelected ? Color.WHITE : Color.parseColor("#333333"));
-            circle.setGravity(Gravity.CENTER);
-            circle.setTypeface(null, Typeface.BOLD);
-            circle.setLayoutParams(new LinearLayout.LayoutParams(sizePx, sizePx));
-            circle.setBackgroundResource(isSelected ? R.drawable.circle_selected : R.drawable.circle_bg);
-            if (isSelected) {
-                circle.setTag("accent_circle");
-                circle.setBackgroundTintList(
-                        android.content.res.ColorStateList.valueOf(ActivityPalette.accent(this)));
-            }
-
-            TextView dayLabel = new TextView(this);
-            dayLabel.setText(RU_DAYS[i]);
-            dayLabel.setTextSize(10);
-            dayLabel.setGravity(Gravity.CENTER);
-            dayLabel.setLayoutParams(new LinearLayout.LayoutParams(sizePx, -2));
-            dayLabel.setPadding(0, 2, 0, 0);
-            dayLabel.setTextColor(Color.parseColor("#666666"));
-
-            item.addView(circle);
-            item.addView(dayLabel);
-            binding.weekContainer.addView(item);
+            binding.weekContainer.addView(weekDayItem(date, i, sizePx));
         }
+    }
+
+    private LinearLayout weekDayItem(LocalDate date, int index, int sizePx) {
+        boolean isSelected = date.toString().equals(selectedDate.toString());
+
+        LinearLayout item = new LinearLayout(this);
+        item.setOrientation(LinearLayout.VERTICAL);
+        item.setGravity(Gravity.CENTER_HORIZONTAL);
+        item.setPadding(0, ActivityUi.dp(this, 4), 0, ActivityUi.dp(this, 4));
+        item.setLayoutParams(new LinearLayout.LayoutParams(0, -2, 1));
+        item.setClickable(true);
+        item.setOnClickListener(v -> {
+            selectedDate = date;
+            renderWeek();
+            updateSelectedDayUI();
+        });
+
+        TextView circle = new TextView(this);
+        circle.setText(String.valueOf(date.getDayOfMonth()));
+        circle.setTextSize(15);
+        circle.setTextColor(isSelected
+                ? Color.WHITE
+                : getResources().getColor(R.color.text_primary, getTheme()));
+        circle.setGravity(Gravity.CENTER);
+        circle.setTypeface(null, Typeface.BOLD);
+        circle.setLayoutParams(new LinearLayout.LayoutParams(sizePx, sizePx));
+        circle.setBackgroundResource(isSelected
+                ? R.drawable.circle_selected
+                : R.drawable.circle_bg);
+        if (isSelected) {
+            circle.setTag("accent_circle");
+            circle.setBackgroundTintList(
+                    ColorStateList.valueOf(ActivityPalette.accent(this)));
+        }
+
+        TextView dayLabel = new TextView(this);
+        dayLabel.setText(RU_DAYS[index]);
+        dayLabel.setTextSize(10);
+        dayLabel.setGravity(Gravity.CENTER);
+        dayLabel.setLayoutParams(new LinearLayout.LayoutParams(sizePx, -2));
+        dayLabel.setPadding(0, 2, 0, 0);
+        dayLabel.setTextColor(getResources().getColor(R.color.text_secondary, getTheme()));
+
+        item.addView(circle);
+        item.addView(dayLabel);
+
+        return item;
     }
 
     private void updateSelectedDayUI() {
         String dateStr = selectedDate.toString();
         List<FoodLog> logs = allLogsByDate.getOrDefault(dateStr, new ArrayList<>());
 
-        Log.d("WATER_DEBUG", "updateSelectedDayUI() для даты: " + dateStr + ", записей: " + logs.size());
-
         int total = sumMl(logs);
 
         if (binding.tvConsumed != null) {
-            binding.tvConsumed.setText("Выпито: " + total + " мл");
+            binding.tvConsumed.setText(total + " мл");
+            binding.waterRing.setProgress(total, currentGoal);
+            binding.waterGoalText.setText("из " + currentGoal + " мл");
+            binding.waterGlasses.setText("≈ " + (int)Math.ceil(Math.max(0, currentGoal-total)/250.0) + " стаканов");
         }
 
-        int remaining = currentGoal - total;
+        int remaining = Math.max(0, currentGoal - total);
         if (binding.tvRemaining != null) {
-            binding.tvRemaining.setText("Осталось: " + remaining + " мл");
-            binding.tvRemaining.setTextColor(Color.parseColor("#666666"));
+            binding.tvRemaining.setText(remaining + " мл");
+            binding.tvRemaining.setTextColor(ActivityPalette.accent(this));
         }
 
         if (binding.llTodayLogs != null) {
             renderLogsList(logs);
+            binding.llTodayLogs.setVisibility(logsExpanded && !logs.isEmpty() ? View.VISIBLE : View.GONE);
+            binding.waterLogsHeader.setText("Записи за день  " + (logsExpanded ? "⌃" : "⌄"));
+            binding.waterLogsHeader.setContentDescription(logsExpanded ? "Свернуть записи за день" : "Показать записи за день");
         }
     }
 
     private int sumMl(List<FoodLog> logs) {
         int total = 0;
         for (FoodLog log : logs) {
-            Log.d("WATER_DEBUG", "  Запись: ml=" + log.ml + ", foodName=" + log.foodName);
-
             if (log.ml != null) {
                 total += log.ml;
             } else if (log.foodName != null && log.foodName.contains("мл")) {
                 total += parseMl(log.foodName);
             }
         }
-        Log.d("WATER_DEBUG", "  Итого: " + total + " мл");
         return total;
     }
 
@@ -422,38 +447,39 @@ public class WaterTrackerActivity extends BaseActivity {
         Collections.reverse(displayLogs);
 
         for (FoodLog log : displayLogs) {
-            LinearLayout row = new LinearLayout(this);
-            row.setOrientation(LinearLayout.HORIZONTAL);
-            row.setGravity(Gravity.CENTER_VERTICAL);
-            row.setPadding(0, 6, 0, 6);
-
-            int mlToShow = (log.ml != null) ? log.ml : parseMl(log.foodName);
-
-            TextView amountView = new TextView(this);
-            amountView.setText("💧 " + mlToShow + " мл");
-            amountView.setTextSize(13);
-            amountView.setTextColor(Color.parseColor("#212121"));
-            amountView.setLayoutParams(new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
-            TextView deleteView = new TextView(this);
-            deleteView.setText("✕");
-            deleteView.setTextSize(15);
-            deleteView.setTextColor(Color.parseColor("#FF6B6B"));
-            deleteView.setClickable(true);
-            deleteView.setPadding(8, 0, 0, 0);
-            deleteView.setOnClickListener(v -> deleteLogEntry(log));
-
-            row.addView(amountView);
-            row.addView(deleteView);
-            binding.llTodayLogs.addView(row);
-
-            View divider = new View(this);
-            divider.setBackgroundColor(Color.parseColor("#EAEAEA"));
-            divider.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1));
-            binding.llTodayLogs.addView(divider);
+            binding.llTodayLogs.addView(waterLogRow(log));
+            binding.llTodayLogs.addView(waterLogDivider());
         }
+    }
+
+    private LinearLayout waterLogRow(FoodLog log) {
+        LinearLayout row = new LinearLayout(this);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setMinimumHeight(ActivityUi.dp(this, 48));
+        int ml = log.ml != null ? log.ml : parseMl(log.foodName);
+        TextView drop = new TextView(this); drop.setText("💧");drop.setTextSize(22);
+        row.addView(drop,new LinearLayout.LayoutParams(ActivityUi.dp(this, 36),-2));
+        TextView amount = new TextView(this);amount.setText(ml+" мл");amount.setTextSize(16);amount.setTextColor(ActivityPalette.text(this));
+        row.addView(amount,new LinearLayout.LayoutParams(0,-2,1));
+        TextView time = new TextView(this);time.setText(waterRecordTime(log));time.setTextSize(14);time.setTextColor(ActivityPalette.muted(this));time.setGravity(Gravity.CENTER);
+        row.addView(time,new LinearLayout.LayoutParams(ActivityUi.dp(this,64),-2));
+        TextView remove = new TextView(this);remove.setText("×");remove.setTextSize(26);remove.setTextColor(Color.parseColor(COLOR_DELETE_TEXT));remove.setGravity(Gravity.CENTER);remove.setContentDescription("Удалить запись воды");
+        row.addView(remove,new LinearLayout.LayoutParams(ActivityUi.dp(this,40),ActivityUi.dp(this,48)));
+        remove.setOnClickListener(v->deleteLogEntry(log));
+        return row;
+    }
+    private String waterRecordTime(FoodLog log) {
+        if(log.createdAt==null || log.createdAt.trim().isEmpty()) return "—";
+        try {return java.time.OffsetDateTime.parse(log.createdAt).atZoneSameInstant(java.time.ZoneId.systemDefault()).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));}
+        catch(Exception e){return "—";}
+    }
+
+    private View waterLogDivider() {
+        View divider = new View(this);
+        divider.setBackgroundColor(androidx.core.graphics.ColorUtils.setAlphaComponent(ActivityPalette.muted(this), 35));
+        divider.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1));
+        return divider;
     }
 
     private int parseMl(String text) {
@@ -465,6 +491,25 @@ public class WaterTrackerActivity extends BaseActivity {
         } catch (Exception ex) {
             return 0;
         }
+    }
+
+    private void showAddWaterDialog() {
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Объём, мл");
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Добавить воду")
+            .setView(input).setNegativeButton("Отмена",null).setPositiveButton("Добавить",null).create();
+        dialog.setOnShowListener(d -> {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(ActivityPalette.accent(this));
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(ActivityPalette.accent(this));
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+                try {
+                    int ml = Integer.parseInt(input.getText().toString().trim());
+                    if(ml<1 || ml>10000)throw new IllegalArgumentException();
+                    binding.etAmount.setText(String.valueOf(ml));addWater();dialog.dismiss();
+                }catch(Exception e){input.setError("Введите объём от 1 до 10000 мл");}
+            });
+        });dialog.show();
     }
 
     private void addWater() {
@@ -505,5 +550,9 @@ public class WaterTrackerActivity extends BaseActivity {
 
         updateSelectedDayUI();
         renderWeek();
+    }
+    @Override protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean("water_logs_expanded", logsExpanded);
     }
 }

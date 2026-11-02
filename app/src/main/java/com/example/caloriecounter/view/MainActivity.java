@@ -1,345 +1,117 @@
 package com.example.caloriecounter.view;
 
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
+import android.animation.ValueAnimator;
+import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Typeface;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.view.Gravity;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.util.AttributeSet;
 import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.view.animation.DecelerateInterpolator;
 
-import androidx.lifecycle.ViewModelProvider;
+import androidx.core.graphics.ColorUtils;
 
-import com.example.caloriecounter.R;
-import com.example.caloriecounter.databinding.ActivityMainBinding;
-import com.example.caloriecounter.model.FoodLog;
-import com.example.caloriecounter.repository.SupabaseRepository;
-import com.example.caloriecounter.viewmodel.MainViewModel;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+public class CalorieRingView extends View {
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+    private static final float STROKE_WIDTH_DP = 12f;
+    private static final float INNER_PADDING_DP = 3f;
+    private static final float TRACK_ALPHA = 0.12f;
+    private static final float LIGHT_MIX = 0.38f;
+    private static final long ANIMATION_DURATION_MS = 650L;
+    private static final float START_ANGLE = -90f;
+    private static final float FULL_SWEEP = 360f;
+    private static final float EPSILON = 0.0001f;
+    private static final float FULL_PROGRESS = 0.9999f;
 
-public class MainActivity extends BaseActivity {
+    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF bounds = new RectF();
 
-    private static final Locale RU = new Locale("ru");
-    private static final String DATE_PATTERN = "yyyy-MM-dd";
-    private static final String WEEKDAY_PATTERN = "EEE";
+    private float progress;
+    private float target = -1;
+    private ValueAnimator animator;
 
-    private ActivityMainBinding binding;
-    private MainViewModel vm;
-    private SupabaseRepository repo;
+    public CalorieRingView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
-    private MainViewModel.TargetData target;
-    private MainViewModel.ConsumedData consumed;
+    public void setProgress(int consumed, int goal) {
+        float next = goal > 0
+                ? Math.max(0, Math.min(1, (float) consumed / goal))
+                : 0;
 
-    private String selectedDate;
-    private String userId;
+        if (Math.abs(target - next) < EPSILON) {
+            return;
+        }
 
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN, Locale.ROOT);
-    private final SimpleDateFormat weekdayFormat = new SimpleDateFormat(WEEKDAY_PATTERN, RU);
+        target = next;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        if (animator != null) {
+            animator.cancel();
+        }
 
-        repo = new SupabaseRepository(this);
-        vm = new ViewModelProvider(this).get(MainViewModel.class);
-
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        userId = prefs.getString("user_id", null);
-
-        selectedDate = vm.getCurrentDate();
-
-        setupObservers();
-        setupClickListeners();
-        setupBottomNavigation();
-        renderWeek();
+        animator = ValueAnimator.ofFloat(progress, next);
+        animator.setDuration(ANIMATION_DURATION_MS);
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.addUpdateListener(valueAnimator -> {
+            progress = (float) valueAnimator.getAnimatedValue();
+            invalidate();
+        });
+        animator.start();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        vm.refreshTargets();
-        vm.refresh();
-    }
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
 
-    private void setupBottomNavigation() {
-        BottomNavigationView bottomNav = binding.bottomNavigation;
-        bottomNav.setSelectedItemId(R.id.nav_food);
+        float density = getResources().getDisplayMetrics().density;
+        float strokeWidth = STROKE_WIDTH_DP * density;
+        float cx = getWidth() / 2f;
+        float cy = getHeight() / 2f;
+        float radius = (Math.min(getWidth(), getHeight()) - strokeWidth) / 2f
+                - INNER_PADDING_DP * density;
 
-        bottomNav.setOnItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_training) {
-                startActivity(new Intent(this, TrainingActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return false;
-            }
-            if (id == R.id.nav_diets) {
-                startActivity(new Intent(this, DietListActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            }
-            if (id == R.id.nav_food) {
-                return true;
-            }
-            if (id == R.id.nav_water) {
-                startActivity(new Intent(this, WaterTrackerActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            }
-            if (id == R.id.nav_weight) {
-                startActivity(new Intent(this, WeightTrackerActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            }
-            return false;
-        });
-    }
+        bounds.set(cx - radius, cy - radius, cx + radius, cy + radius);
 
-    private void setupObservers() {
-        vm.getTargetData().observe(this, data -> {
-            if (data != null) {
-                target = data;
-                updateUI();
-            }
-        });
-        vm.getConsumedData().observe(this, data -> {
-            if (data != null) {
-                consumed = data;
-                updateUI();
-            }
-        });
-        vm.getAllLogs().observe(this, logs -> {
-            if (logs != null) {
-                renderAllMeals(logs);
-            }
-        });
-    }
+        int accent = ActivityPalette.accent(getContext());
 
-    private void setupClickListeners() {
-        binding.btnBreakfast.setOnClickListener(v -> openFoodSearch("Завтрак"));
-        binding.btnLunch.setOnClickListener(v -> openFoodSearch("Обед"));
-        binding.btnDinner.setOnClickListener(v -> openFoodSearch("Ужин"));
-        binding.btnSnack.setOnClickListener(v -> openFoodSearch("Перекус"));
-        binding.btnProfile.setOnClickListener(v ->
-                startActivity(new Intent(this, ProfileActivity.class)));
-        binding.btnCalendar.setOnClickListener(v ->
-                startActivity(new Intent(this, CalendarActivity.class)));
-        binding.btnToday.setOnClickListener(v -> {
-            selectedDate = dateFormat.format(Calendar.getInstance().getTime());
-            vm.setDate(selectedDate);
-            renderWeek();
-            updateUI();
-        });
-    }
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(strokeWidth);
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setShader(null);
+        paint.setColor(ColorUtils.blendARGB(
+                ActivityPalette.surface(getContext()), accent, TRACK_ALPHA));
 
-    private void openFoodSearch(String meal) {
-        Intent intent = new Intent(this, FoodSearchActivity.class);
-        intent.putExtra("meal", meal);
-        intent.putExtra("selected_date", selectedDate);
-        intent.putExtra("userId", userId);
-        startActivity(intent);
-    }
+        canvas.drawOval(bounds, paint);
 
-    private void renderWeek() {
-        if (binding.weekContainer == null) {
-            return;
-        }
-        binding.weekContainer.removeAllViews();
-
-        Calendar calendar = Calendar.getInstance();
-        try {
-            calendar.setTime(Objects.requireNonNull(dateFormat.parse(selectedDate)));
-        } catch (Exception ex) {
-            return;
-        }
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-
-        int circleSize = (int) (getResources().getDisplayMetrics().density * 47.5);
-
-        for (int i = 0; i < 7; i++) {
-            String date = dateFormat.format(calendar.getTime());
-            String dayNum = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
-            String dayName = weekdayFormat.format(calendar.getTime())
-                    .substring(0, 2)
-                    .toUpperCase();
-
-            boolean isSelected = date.equals(selectedDate);
-
-            LinearLayout item = new LinearLayout(this);
-            item.setOrientation(LinearLayout.VERTICAL);
-            item.setGravity(Gravity.CENTER_HORIZONTAL);
-            item.setPadding(4, 2, 4, 2);
-            item.setClickable(true);
-
-            TextView circle = new TextView(this);
-            circle.setText(dayNum);
-            circle.setTextSize(15);
-            circle.setTextColor(isSelected ? Color.WHITE : Color.parseColor("#333333"));
-            circle.setTypeface(null, Typeface.BOLD);
-            circle.setGravity(Gravity.CENTER);
-            circle.setLayoutParams(new LinearLayout.LayoutParams(circleSize, circleSize));
-            circle.setBackgroundResource(isSelected ? R.drawable.circle_selected : R.drawable.circle_bg);
-            if (isSelected) {
-                circle.setTag("accent_circle");
-                circle.setBackgroundTintList(ColorStateList.valueOf(ActivityPalette.accent(this)));
-            }
-
-            TextView dayLabel = new TextView(this);
-            dayLabel.setText(dayName);
-            dayLabel.setTextSize(9);
-            dayLabel.setTextColor(Color.parseColor("#666666"));
-            dayLabel.setGravity(Gravity.CENTER);
-            dayLabel.setLayoutParams(new LinearLayout.LayoutParams(circleSize, -2));
-            dayLabel.setPadding(0, 1, 0, 0);
-
-            item.addView(circle);
-            item.addView(dayLabel);
-
-            final String currentDateStr = date;
-            item.setOnClickListener(v -> {
-                selectedDate = currentDateStr;
-                vm.setDate(selectedDate);
-                renderWeek();
-                updateUI();
-            });
-
-            binding.weekContainer.addView(item);
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
-    }
-
-    private void updateUI() {
-        if (target == null || consumed == null) {
+        if (progress <= 0) {
             return;
         }
 
-        int warningColor = getResources().getColor(R.color.warning, getTheme());
-        int dangerColor = getResources().getColor(R.color.danger, getTheme());
-        int defaultColor = getResources().getColor(R.color.text_default, getTheme());
+        int light = ColorUtils.blendARGB(accent, Color.WHITE, LIGHT_MIX);
 
-        binding.tvConsumed.setText(String.format("%d ккал", consumed.cal));
+        LinearGradient gradient = new LinearGradient(
+                cx - radius, cy - radius,
+                cx + radius, cy + radius,
+                light, accent, Shader.TileMode.CLAMP);
+        paint.setShader(gradient);
 
-        int remaining = target.cal - consumed.cal;
-        binding.tvRemaining.setText(String.format("Осталось: %d ккал", remaining));
-        binding.tvRemaining.setTextColor(remaining <= 0 ? dangerColor : defaultColor);
-
-        updateMacroText(binding.tvPro, "Белки", consumed.pro, target.pro, defaultColor, warningColor, dangerColor);
-        updateMacroText(binding.tvFat, "Жиры", consumed.fat, target.fat, defaultColor, warningColor, dangerColor);
-        updateMacroText(binding.tvCarbs, "Углеводы", consumed.carb, target.carb, defaultColor, warningColor, dangerColor);
-        updateMacroText(binding.tvSugar, "Сахар", consumed.sugar, target.sugar, defaultColor, warningColor, dangerColor);
-        updateMacroText(binding.tvFiber, "Клетчатка", consumed.fiber, target.fiber, defaultColor, warningColor, dangerColor);
-    }
-
-    private void updateMacroText(TextView view,
-                                 String label,
-                                 int consumedValue,
-                                 int targetValue,
-                                 int defaultColor,
-                                 int warningColor,
-                                 int dangerColor) {
-        view.setText(String.format("%s: %dг / %dг", label, consumedValue, targetValue));
-
-        int percent = targetValue > 0 ? (consumedValue * 100 / targetValue) : 0;
-        if (percent >= 100) {
-            view.setTextColor(dangerColor);
-        } else if (percent >= 70) {
-            view.setTextColor(warningColor);
+        if (progress >= FULL_PROGRESS) {
+            canvas.drawOval(bounds, paint);
         } else {
-            view.setTextColor(defaultColor);
-        }
-    }
-
-    private void renderAllMeals(List<FoodLog> logs) {
-        renderMealList(binding.llBreakfastList, binding.tvBreakfastTotal, filterLogs(logs, "Завтрак"));
-        renderMealList(binding.llLunchList, binding.tvLunchTotal, filterLogs(logs, "Обед"));
-        renderMealList(binding.llDinnerList, binding.tvDinnerTotal, filterLogs(logs, "Ужин"));
-        renderMealList(binding.llSnackList, binding.tvSnackTotal, filterLogs(logs, "Перекус"));
-    }
-
-    private List<FoodLog> filterLogs(List<FoodLog> logs, String mealType) {
-        List<FoodLog> result = new ArrayList<>();
-        if (logs != null) {
-            for (FoodLog log : logs) {
-                if (mealType.equals(log.mealType)) {
-                    result.add(log);
-                }
-            }
-        }
-        return result;
-    }
-
-    private void renderMealList(LinearLayout container, TextView totalView, List<FoodLog> items) {
-        container.removeAllViews();
-
-        int totalCal = 0;
-
-        if (items != null) {
-            for (FoodLog log : items) {
-                totalCal += log.totalCalories;
-                container.addView(mealRow(log));
-                container.addView(mealDivider());
-            }
+            canvas.drawArc(bounds, START_ANGLE, progress * FULL_SWEEP, false, paint);
         }
 
-        totalView.setText(String.format("%d ккал", totalCal));
+        paint.setShader(null);
     }
 
-    private LinearLayout mealRow(FoodLog log) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.setPadding(12, 6, 12, 6);
-
-        TextView name = new TextView(this);
-        name.setText(String.format("%s — %d ккал", log.foodName, log.totalCalories));
-        name.setTextSize(14);
-        name.setTextColor(Color.parseColor("#333333"));
-        name.setLayoutParams(new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        row.addView(name);
-
-        TextView delete = new TextView(this);
-        delete.setText("✕");
-        delete.setTextSize(18);
-        delete.setTextColor(Color.parseColor("#D32F2F"));
-        delete.setPadding(12, 0, 0, 0);
-        delete.setClickable(true);
-        delete.setOnClickListener(v -> deleteLog(log.id, log.logDate));
-        row.addView(delete);
-
-        return row;
-    }
-
-    private View mealDivider() {
-        View divider = new View(this);
-        divider.setBackgroundColor(Color.parseColor("#EAEAEA"));
-        divider.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 1));
-        return divider;
-    }
-
-    private void deleteLog(String logId, String date) {
-        repo.deleteLog(logId, new SupabaseRepository.VoidCallback() {
-            @Override
-            public void onSuccess() {
-                runOnUiThread(() -> vm.setDate(date));
-            }
-
-            @Override
-            public void onError(String message) {
-            }
-        });
+    @Override
+    protected void onDetachedFromWindow() {
+        if (animator != null) {
+            animator.cancel();
+        }
+        super.onDetachedFromWindow();
     }
 }

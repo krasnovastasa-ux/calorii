@@ -3,19 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F3F7"
+    android:background="@color/bg_primary"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_margin="20dp"
-        android:padding="20dp"
         android:background="@drawable/profile_card"
-        android:elevation="0dp">
+        android:elevation="0dp"
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <!-- Верхняя панель -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="48dp">
@@ -24,19 +23,17 @@
                 android:id="@+id/btnBack"
                 android:layout_width="42dp"
                 android:layout_height="42dp"
-                android:background="@drawable/profile_circle"
-                android:src="@android:drawable/ic_media_previous"
-                android:contentDescription="Назад"
-                android:padding="10dp"
                 android:layout_alignParentStart="true"
-                android:scaleType="centerInside"
+                android:background="@drawable/profile_circle"
+                android:backgroundTint="@color/app_surface"
+                android:contentDescription="Назад"
                 android:elevation="0dp"
-                app:tint="#7041E8"
-                android:backgroundTint="#FFFFFF"/>
-
+                android:padding="10dp"
+                android:scaleType="centerInside"
+                android:src="@android:drawable/ic_media_previous"
+                app:tint="@color/primary" android:tag="accent_icon" />
         </RelativeLayout>
 
-        <!-- Аватар -->
         <FrameLayout
             android:layout_width="120dp"
             android:layout_height="120dp"
@@ -49,53 +46,49 @@
                 android:layout_height="112dp"
                 android:layout_gravity="center"
                 android:background="@drawable/profile_avatar_bg"
-                android:clipToOutline="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/kot"
                 android:clickable="true"
+                android:clipToOutline="true"
+                android:contentDescription="Выбрать фотографию профиля"
                 android:focusable="true"
-                android:contentDescription="Выбрать фотографию профиля"/>
-
+                android:scaleType="centerCrop"
+                android:src="@drawable/kot" />
         </FrameLayout>
 
         <TextView
             android:id="@+id/tvEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_marginTop="8dp"
+            android:gravity="center"
             android:text="email@gmail.com"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#24213D"/>
+            android:textStyle="bold" />
 
-
-        <!-- Акцентный цвет -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Акцентный цвет"
-            android:textColor="#292440"
-            android:textStyle="bold"
             android:layout_marginTop="32dp"
-            android:textSize="14sp"/>
+            android:text="Акцентный цвет"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
             android:layout_marginTop="10dp"
-            android:layout_marginBottom="18dp">
+            android:layout_marginBottom="18dp"
+            android:scrollbars="none">
 
             <LinearLayout
                 android:id="@+id/llAccentColors"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"/>
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
         </HorizontalScrollView>
 
-        <!-- Имя -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -112,15 +105,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName"
-                android:textColor="#282440"/>
+                android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Рост и вес -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="0dp"
@@ -139,7 +131,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:maxLength="3"/>
+                    android:maxLength="3" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -159,11 +151,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
-                    android:maxLength="3"/>
+                    android:maxLength="3" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <!-- Возраст -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -180,81 +171,77 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="number"
-                android:maxLength="3"/>
+                android:maxLength="3" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Пол -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="Пол"
-            android:textColor="#77718F"
-            android:textSize="12sp"
-            android:layout_marginTop="5dp"/>
+            android:textColor="@color/text_primary"
+            android:textSize="12sp" />
 
         <Spinner
             android:id="@+id/spinnerGender"
             android:layout_width="match_parent"
             android:layout_height="52dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/profile_spinner"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="8dp"/>
+            android:paddingHorizontal="12dp" />
 
-        <!-- Цель -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Цель"
-            android:textColor="#77718F"
-            android:textSize="12sp"/>
+            android:textColor="@color/text_primary"
+            android:textSize="12sp" />
 
         <Spinner
             android:id="@+id/spinnerGoal"
             android:layout_width="match_parent"
             android:layout_height="52dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/profile_spinner"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="8dp"/>
+            android:paddingHorizontal="12dp" />
 
-        <!-- Образ жизни -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Образ жизни"
-            android:textColor="#77718F"
-            android:textSize="12sp"/>
+            android:textColor="@color/text_primary"
+            android:textSize="12sp" />
 
         <Spinner
             android:id="@+id/spinnerLifestyle"
             android:layout_width="match_parent"
             android:layout_height="52dp"
+            android:layout_marginBottom="20dp"
             android:background="@drawable/profile_spinner"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="20dp"/>
+            android:paddingHorizontal="12dp" />
 
-        <!-- Сохранение -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="✓  Сохранить изменения"
-            android:textSize="14sp"
+            android:backgroundTint="#7441ED"
+            android:text="✓ Сохранить изменения"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#7441ED"
-            app:cornerRadius="28dp"/>
+            android:textSize="14sp"
+            app:cornerRadius="28dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"
             android:text="Выйти из аккаунта"
             android:textAllCaps="false"
             android:textColor="#D64C65"
-            app:cornerRadius="24dp"
             app:backgroundTint="#FFF0F3"
-            style="@style/Widget.MaterialComponents.Button"/>
+            app:cornerRadius="24dp" />
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -262,7 +249,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="12dp"
-            android:visibility="gone"/>
-
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

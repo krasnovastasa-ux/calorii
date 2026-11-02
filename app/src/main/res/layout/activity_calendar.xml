@@ -12,18 +12,18 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="12dp"
-        android:background="@color/white"
-        android:elevation="2dp">
+        android:background="@color/bg_primary"
+        android:elevation="0dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrev"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:text="←"
-            android:textSize="20sp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.TextButton" />
+            android:text="‹"
+            android:textSize="28sp" />
 
         <TextView
             android:id="@+id/tvTitle"
@@ -32,19 +32,19 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="Май 2026"
+            android:textColor="@color/text_primary"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary" />
+            android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNext"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:text="→"
-            android:textSize="20sp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            style="@style/Widget.MaterialComponents.Button.TextButton" />
+            android:text="›"
+            android:textSize="20sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -57,11 +57,11 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToday"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Сегодня"
-            android:textSize="13sp"
-            style="@style/Widget.MaterialComponents.Button.TextButton" />
+            android:textSize="13sp" />
 
         <View
             android:layout_width="12dp"
@@ -69,11 +69,11 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnToggleView"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Год"
-            android:textSize="13sp"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            android:text="Год  ⌄"
+            android:textSize="13sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -85,74 +85,74 @@
         android:paddingBottom="8dp">
 
         <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
             android:text="Пн"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
-
-        <TextView
             android:text="Вт"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
-
-        <TextView
             android:text="Ср"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
-
-        <TextView
             android:text="Чт"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
-
-        <TextView
             android:text="Пт"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
-
-        <TextView
             android:text="Сб"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
+            android:textStyle="bold" />
 
         <TextView
-            android:text="Вс"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
+            android:text="Вс"
+            android:textColor="@color/text_secondary"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_secondary" />
+            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout

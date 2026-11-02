@@ -36,10 +36,12 @@ public class MyRecipeEditorActivity extends BaseActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         userId = prefs.getString("user_id", "");
         recipeId = getIntent().getStringExtra("recipe_id");
+        ((TextView)findView("recipeEditorTitle")).setText(recipeId == null ? "Новый рецепт" : "Редактирование рецепта");
 
         if (userId.isEmpty()) { finish(); return; }
 
         setupClicks();
+        binding.getRoot().post(this::styleEditorButtons);
         if (recipeId == null) clearFields();
         else loadRecipe();
     }
@@ -329,6 +331,17 @@ public class MyRecipeEditorActivity extends BaseActivity {
         View row; String name, foodId; int grams, cal100, pro100, fat100, carb100;
         IngredientRow(View r, String n, int g, String f, int c, int p, int ft, int cb) {
             row=r; name=n; grams=g; foodId=f; cal100=c; pro100=p; fat100=ft; carb100=cb;
+        }
+    }
+    @Override protected void onResume(){super.onResume();if(binding!=null)binding.getRoot().post(this::styleEditorButtons);}
+    private void styleEditorButtons(){
+        int accent=ActivityPalette.accent(this);
+        for(String id:new String[]{"btnCancel","btnAddIngredient"}){
+            View v=findView(id);if(v instanceof com.google.android.material.button.MaterialButton){
+                com.google.android.material.button.MaterialButton b=(com.google.android.material.button.MaterialButton)v;
+                b.setBackgroundTintList(android.content.res.ColorStateList.valueOf(ActivityPalette.surface(this)));
+                b.setStrokeColor(android.content.res.ColorStateList.valueOf(accent));b.setStrokeWidth(ActivityUi.dp(this,1));b.setTextColor(accent);
+            }
         }
     }
 }

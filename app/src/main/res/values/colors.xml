@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">#6C63FF</color>
     <color name="primary_dark">#5A52D5</color>
@@ -10,9 +9,8 @@
     <color name="text_secondary">#6B7280</color>
     <color name="error">#FF6B6B</color>
     <color name="error_color">#FFD32F2F</color>
-
     <color name="warning">#FFA000</color>
     <color name="danger">#D32F2F</color>
-
     <color name="text_default">#000000</color>
+    <color name="app_surface">#FFFFFF</color>
 </resources>

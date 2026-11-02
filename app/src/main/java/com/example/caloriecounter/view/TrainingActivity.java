@@ -42,6 +42,7 @@ public class TrainingActivity extends BaseActivity {
     private LocalDate selected = LocalDate.now();
     private ActivityRepository repo;
     private int version;
+
     private boolean recordsReady;
     private LocalDate loadedFrom;
 
@@ -264,17 +265,19 @@ public class TrainingActivity extends BaseActivity {
         plus.setTextColor(ActivityPalette.accent(this));
         row.addView(plus);
 
-        row.setOnClickListener(v -> {
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(searchInput.getWindowToken(), 0);
-            searchInput.clearFocus();
-            searchInput.setText("");
-            startActivity(new Intent(this, ActivityEntryActivity.class)
-                    .putExtra("activity_id", activity.id)
-                    .putExtra("date", selected.toString()));
-        });
+        row.setOnClickListener(v -> openEntry(activity));
 
         return row;
+    }
+
+    private void openEntry(ActivityType activity) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(searchInput.getWindowToken(), 0);
+        searchInput.clearFocus();
+        searchInput.setText("");
+        startActivity(new Intent(this, ActivityEntryActivity.class)
+                .putExtra("activity_id", activity.id)
+                .putExtra("date", selected.toString()));
     }
 
     private void week() {
@@ -286,43 +289,53 @@ public class TrainingActivity extends BaseActivity {
 
         for (int i = 0; i < 7; i++) {
             LocalDate date = monday.plusDays(i);
-            boolean checked = date.equals(selected);
-
-            LinearLayout item = new LinearLayout(this);
-            item.setOrientation(LinearLayout.VERTICAL);
-            item.setGravity(Gravity.CENTER_HORIZONTAL);
-            item.setPadding(4, 2, 4, 2);
-
-            TextView circle = new TextView(this);
-            circle.setText(String.valueOf(date.getDayOfMonth()));
-            circle.setTextSize(15);
-            circle.setTypeface(null, 1);
-            circle.setGravity(Gravity.CENTER);
-            circle.setTextColor(checked ? Color.WHITE : Color.parseColor("#333333"));
-            circle.setLayoutParams(new LinearLayout.LayoutParams(size, size));
-            circle.setBackgroundResource(checked ? R.drawable.circle_selected : R.drawable.circle_bg);
-            if (checked) {
-                circle.setTag("accent_circle");
-                circle.setBackgroundTintList(ColorStateList.valueOf(ActivityPalette.accent(this)));
-            }
-
-            TextView label = new TextView(this);
-            label.setText(WEEKDAYS[i]);
-            label.setTextSize(9);
-            label.setGravity(Gravity.CENTER);
-            label.setLayoutParams(new LinearLayout.LayoutParams(size, -2));
-            label.setTextColor(Color.parseColor("#666666"));
-            label.setPadding(0, 1, 0, 0);
-
-            item.addView(circle);
-            item.addView(label);
-            box.addView(item);
-            item.setOnClickListener(v -> {
-                selected = date;
-                week();
-                load();
-            });
+            box.addView(weekDayItem(date, i, size));
         }
+    }
+
+    private LinearLayout weekDayItem(LocalDate date, int index, int size) {
+        boolean checked = date.equals(selected);
+
+        LinearLayout item = new LinearLayout(this);
+        item.setOrientation(LinearLayout.VERTICAL);
+        item.setGravity(Gravity.CENTER_HORIZONTAL);
+        item.setPadding(4, 2, 4, 2);
+
+        TextView circle = new TextView(this);
+        circle.setText(String.valueOf(date.getDayOfMonth()));
+        circle.setTextSize(15);
+        circle.setTypeface(null, 1);
+        circle.setGravity(Gravity.CENTER);
+        circle.setTextColor(checked
+                ? Color.WHITE
+                : getResources().getColor(R.color.text_primary, getTheme()));
+        circle.setLayoutParams(new LinearLayout.LayoutParams(size, size));
+        circle.setBackgroundResource(checked
+                ? R.drawable.circle_selected
+                : R.drawable.circle_bg);
+        if (checked) {
+            circle.setTag("accent_circle");
+            circle.setBackgroundTintList(ColorStateList.valueOf(ActivityPalette.accent(this)));
+        }
+
+        TextView label = new TextView(this);
+        label.setText(WEEKDAYS[index]);
+        label.setTextSize(9);
+        label.setGravity(Gravity.CENTER);
+        label.setLayoutParams(new LinearLayout.LayoutParams(size, -2));
+        label.setTextColor(getResources().getColor(R.color.text_secondary, getTheme()));
+        label.setPadding(0, 1, 0, 0);
+
+        item.addView(circle);
+        item.addView(label);
+
+        item.setOnClickListener(v -> {
+            selected = date;
+            week();
+            load();
+        });
+
+        return item;
     }
 
     private boolean alive() {
@@ -335,7 +348,10 @@ public class TrainingActivity extends BaseActivity {
             render();
             return;
         }
-        LocalDate weekStart = LocalDate.now().with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY)).minusDays(1);
+
+        LocalDate weekStart = LocalDate.now()
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                .minusDays(1);
         final LocalDate requestFrom = neededFrom.isBefore(weekStart) ? neededFrom : weekStart;
         int request = ++version;
 
@@ -398,12 +414,16 @@ public class TrainingActivity extends BaseActivity {
         }
 
         ((TextView) findViewById(R.id.actBurned)).setText(
-                Math.round(sum) <= 0 ? "0 ккал" : "≈ " + Math.round(sum) + " ккал");
+                Math.round(sum) <= 0
+                        ? "0 ккал"
+                        : "≈ " + Math.round(sum) + " ккал");
 
         String comparison = buildComparison(sum, previous, count, previousCount);
         ((TextView) findViewById(R.id.actComparison)).setText(comparison
                 + "\nПо внесённым активностям"
-                + (selected.equals(LocalDate.now()) ? "; сегодняшний день ещё не завершён." : "."));
+                + (selected.equals(LocalDate.now())
+                ? "; сегодняшний день ещё не завершён."
+                : "."));
 
         ((TextView) findViewById(R.id.actStatus)).setText(count == 0
                 ? "Активностей за этот день пока нет. Добавьте их через поиск."

@@ -50,7 +50,7 @@ public class DietDetailActivity extends BaseActivity {
 
     private void addTitle(String text) {
         TextView tv = new TextView(this); tv.setText(text); tv.setTextSize(24);
-        tv.setTypeface(null, android.graphics.Typeface.BOLD); tv.setTextColor(Color.parseColor("#1A1A2E"));
+        tv.setTypeface(null, android.graphics.Typeface.BOLD); tv.setTextColor(ActivityPalette.text(this));
         tv.setPadding(0, 0, 0, 24); binding.llContent.addView(tv);
     }
 
@@ -60,14 +60,14 @@ public class DietDetailActivity extends BaseActivity {
         t.setText(title);
         t.setTextSize(18);
         t.setTypeface(null, android.graphics.Typeface.BOLD);
-        t.setTextColor(Color.parseColor("#6C63FF"));
+        t.setTextColor(ActivityPalette.accent(this));
         t.setTag("accent");
         t.setPadding(0, 16, 0, 8);
         binding.llContent.addView(t);
         TextView c = new TextView(this);
         c.setText(content);
         c.setTextSize(15);
-        c.setTextColor(0xFF333333);
+        c.setTextColor(ActivityPalette.text(this));
         c.setPadding(8, 0, 8, 16);
         binding.llContent.addView(c);
         addDivider();
@@ -79,7 +79,7 @@ public class DietDetailActivity extends BaseActivity {
         t.setText(title);
         t.setTextSize(18);
         t.setTypeface(null, android.graphics.Typeface.BOLD);
-        t.setTextColor(Color.parseColor("#6C63FF"));
+        t.setTextColor(ActivityPalette.accent(this));
         t.setTag("accent");
         t.setPadding(0, 16, 0, 8);
         binding.llContent.addView(t);
@@ -89,7 +89,7 @@ public class DietDetailActivity extends BaseActivity {
                 TextView c = new TextView(this);
                 c.setText("• " + item);
                 c.setTextSize(15);
-                c.setTextColor(0xFF333333);
+                c.setTextColor(ActivityPalette.text(this));
                 c.setPadding(16, 4, 8, 4);
                 binding.llContent.addView(c);
             }
@@ -105,7 +105,7 @@ public class DietDetailActivity extends BaseActivity {
 
     private void addDivider() {
         android.view.View v = new android.view.View(this);
-        v.setBackgroundColor(0xFFEAEAEA);
+        v.setBackgroundColor(ActivityPalette.muted(this));
         v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 2));
         binding.llContent.addView(v);
     }

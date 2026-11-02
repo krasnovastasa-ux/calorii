@@ -5,9 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -18,11 +18,12 @@ import com.example.caloriecounter.repository.SupabaseRepository;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 public class DietListActivity extends BaseActivity {
+
+    private static final String GOAL_DEFAULT = "maintain";
 
     private ActivityDietListBinding binding;
     private SupabaseRepository repo;
@@ -40,11 +41,12 @@ public class DietListActivity extends BaseActivity {
         repo = new SupabaseRepository(this);
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        userGoal = prefs.getString("goal", "maintain");
+        userGoal = prefs.getString("goal", GOAL_DEFAULT);
 
         loadDiets();
         setupSearch();
         setupBottomNavigation();
+        findViewById(R.id.dietBack).setOnClickListener(v -> finish());
     }
 
     private void setupBottomNavigation() {
@@ -156,25 +158,53 @@ public class DietListActivity extends BaseActivity {
     }
 
     private LinearLayout dietRow(Diet diet) {
+        int padding = ActivityUi.dp(this, 12);
+
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(16, 12, 16, 12);
-        row.setBackgroundResource(R.drawable.bg_card);
-        row.setClickable(true);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setPadding(padding, padding, padding, padding);
+        row.setBackground(ActivityUi.shape(
+                ActivityPalette.surface(this), padding * 3 / 2));
+
+        LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(-1, -2);
+        rowParams.setMargins(0, 0, 0, padding / 2);
+        row.setLayoutParams(rowParams);
+
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
 
         TextView name = new TextView(this);
-        name.setText(diet.name != null ? diet.name : "Без названия");
-        name.setTextSize(16);
-        name.setTextColor(0xFF212121);
-        name.setLayoutParams(new LinearLayout.LayoutParams(
-                0, ViewGroup.LayoutParams.WRAP_CONTENT, 1));
-        row.addView(name);
+        name.setText(diet.name == null ? "Без названия" : diet.name);
+        name.setTextSize(14);
+        name.setTextColor(ActivityPalette.text(this));
+        labels.addView(name);
 
-        row.setOnClickListener(v -> {
-            Intent intent = new Intent(DietListActivity.this, DietDetailActivity.class);
-            intent.putExtra("diet_id", diet.id);
-            startActivity(intent);
-        });
+        String subtitle = diet.benefits == null
+                ? "Подробнее о питании"
+                : diet.benefits.replace('\n', ' ');
+
+        TextView description = new TextView(this);
+        description.setText(subtitle);
+        description.setTextSize(12);
+        description.setMaxLines(1);
+        description.setEllipsize(TextUtils.TruncateAt.END);
+        description.setTextColor(ActivityPalette.muted(this));
+        labels.addView(description);
+
+        row.addView(labels, new LinearLayout.LayoutParams(0, -2, 1));
+
+        TextView arrow = new TextView(this);
+        arrow.setText("›");
+        arrow.setTextSize(28);
+        arrow.setGravity(Gravity.CENTER);
+        arrow.setTextColor(ActivityPalette.accent(this));
+        arrow.setTag("accent");
+        row.addView(arrow, new LinearLayout.LayoutParams(padding * 2, padding * 3));
+
+        row.setOnClickListener(v -> startActivity(
+                new Intent(this, DietDetailActivity.class)
+                        .putExtra("diet_id", diet.id)));
 
         return row;
     }
@@ -184,7 +214,7 @@ public class DietListActivity extends BaseActivity {
         view.setText(text);
         view.setGravity(Gravity.CENTER);
         view.setPadding(0, 40, 0, 40);
-        view.setTextColor(0xFF757575);
+        view.setTextColor(ActivityPalette.muted(this));
         binding.llDietsList.addView(view);
     }
 }

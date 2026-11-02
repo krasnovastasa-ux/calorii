@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F6FA">
+    android:background="@color/bg_primary">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -12,8 +12,8 @@
         android:clipToPadding="false"
         android:fillViewport="true"
         android:paddingStart="20dp"
-        android:paddingEnd="20dp"
         android:paddingTop="22dp"
+        android:paddingEnd="20dp"
         android:paddingBottom="24dp">
 
         <LinearLayout
@@ -21,13 +21,12 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Заголовок -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="22dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:layout_marginBottom="22dp">
+                android:orientation="horizontal">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -38,21 +37,19 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:letterSpacing="0.16"
                         android:text="ТВОЙ ПРОГРЕСС"
-                        android:textColor="#85899A"
+                        android:textColor="@color/text_primary"
                         android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.16" />
-
+                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Переключатель Вес / Калории -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="22dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/app_surface"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="2dp"
                 app:strokeColor="#ECECF3"
@@ -85,7 +82,7 @@
                         android:layout_weight="1"
                         android:text="Калории"
                         android:textAllCaps="false"
-                        android:textColor="#777B8D"
+                        android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         app:backgroundTint="#F0EFF7"
@@ -94,17 +91,15 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Заголовок периода -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:text="Период"
-                android:textColor="#25273A"
+                android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <!-- Периоды -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -133,7 +128,7 @@
                     android:layout_marginHorizontal="5dp"
                     android:text="Месяц"
                     android:textAllCaps="false"
-                    android:textColor="#777B8D"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     app:backgroundTint="#EAEAF2"
                     app:cornerRadius="13dp"
@@ -147,19 +142,18 @@
                     android:layout_marginStart="5dp"
                     android:text="Год"
                     android:textAllCaps="false"
-                    android:textColor="#777B8D"
+                    android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     app:backgroundTint="#EAEAF2"
                     app:cornerRadius="13dp"
                     app:elevation="0dp" />
             </LinearLayout>
 
-            <!-- Карточка графика -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/app_surface"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="3dp"
                 app:strokeColor="#ECECF3"
@@ -187,7 +181,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Ввод веса -->
             <LinearLayout
                 android:id="@+id/weightInputContainer"
                 android:layout_width="match_parent"
@@ -199,7 +192,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:text="Добавить измерение"
-                    android:textColor="#25273A"
+                    android:textColor="@color/text_primary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
@@ -207,7 +200,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="18dp"
-                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardBackgroundColor="@color/app_surface"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="2dp"
                     app:strokeColor="#ECECF3"
@@ -229,8 +222,8 @@
                             app:boxCornerRadiusBottomStart="14dp"
                             app:boxCornerRadiusBottomEnd="14dp"
                             app:boxStrokeColor="#7563F6"
-                            app:endIconMode="custom"
-                            app:endIconDrawable="@android:drawable/ic_menu_today">
+                            app:endIconDrawable="@android:drawable/ic_menu_today"
+                            app:endIconMode="custom">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etDate"
@@ -238,7 +231,7 @@
                                 android:layout_height="wrap_content"
                                 android:focusable="false"
                                 android:inputType="none"
-                                android:textColor="#25273A"
+                                android:textColor="@color/text_primary"
                                 android:textSize="15sp" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -260,7 +253,7 @@
                                 android:layout_height="wrap_content"
                                 android:inputType="numberDecimal"
                                 android:maxLength="5"
-                                android:textColor="#25273A"
+                                android:textColor="@color/text_primary"
                                 android:textSize="15sp" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -269,7 +262,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="54dp"
                             android:layout_marginTop="16dp"
-                            android:text="＋  Сохранить измерение"
+                            android:text="＋ Сохранить измерение"
                             android:textAllCaps="false"
                             android:textSize="15sp"
                             android:textStyle="bold"
@@ -287,7 +280,6 @@
                 android:layout_marginBottom="18dp"
                 android:indeterminateTint="#7563F6"
                 android:visibility="gone" />
-
         </LinearLayout>
     </ScrollView>
 
@@ -296,10 +288,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#FFFFFF"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"
+        android:background="@color/app_surface"
         app:itemIconTint="@color/bottom_nav_color"
-        app:itemTextColor="@color/bottom_nav_color" />
+        app:itemTextColor="@color/bottom_nav_color"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
 
 </RelativeLayout>

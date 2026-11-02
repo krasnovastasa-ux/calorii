@@ -39,8 +39,8 @@ public class LoginActivity extends BaseActivity {
 
         binding.btnLogin.setOnClickListener(v -> {
             String email = binding.etEmail.getText().toString().trim();
-            String password = binding.etPassword.getText().toString().trim();
-            if (email.isEmpty() || password.isEmpty()) return;
+            String password = binding.etPassword.getText().toString();
+            if (!validateCredentials(email, password, false)) return;
 
             binding.progressBar.setVisibility(android.view.View.VISIBLE);
             binding.btnLogin.setEnabled(false);
@@ -58,6 +58,7 @@ public class LoginActivity extends BaseActivity {
                     runOnUiThread(() -> {
                         binding.progressBar.setVisibility(android.view.View.GONE);
                         binding.btnLogin.setEnabled(true);
+                        showAuthError(msg);
                     });
                 }
             });
@@ -83,9 +84,8 @@ public class LoginActivity extends BaseActivity {
 
         binding.btnRegister.setOnClickListener(v -> {
             String email = binding.etEmail.getText().toString().trim();
-            String password = binding.etPassword.getText().toString().trim();
-            if (email.isEmpty() || password.isEmpty()) return;
-            if (password.length() < 6) return;
+            String password = binding.etPassword.getText().toString();
+            if (!validateCredentials(email, password, true)) return;
 
             Log.d(TAG, "Регистрация: " + email);
             binding.progressBar.setVisibility(android.view.View.VISIBLE);
@@ -94,7 +94,22 @@ public class LoginActivity extends BaseActivity {
             repo.signUp(email, password, new SupabaseRepository.SignUpCallback() {
                 @Override
                 public void onSuccess(AuthResponse response) {
-                    Log.d(TAG, "Регистрация: " + response.user.id);
+                    if (response == null || response.user == null || response.user.id == null) {
+                        binding.progressBar.setVisibility(android.view.View.GONE);
+                        binding.btnRegister.setEnabled(true);
+                        showAuthError("Не удалось создать аккаунт. Повторите попытку.");
+                        return;
+                    }
+                    if (response.accessToken == null || response.accessToken.isEmpty()) {
+                        binding.progressBar.setVisibility(android.view.View.GONE);
+                        binding.btnRegister.setEnabled(true);
+                        new androidx.appcompat.app.AlertDialog.Builder(LoginActivity.this)
+                            .setTitle("Подтвердите email")
+                            .setMessage("Проверьте почту и подтвердите адрес по ссылке, затем нажмите «Войти». Если аккаунт уже существует, попробуйте войти.")
+                            .setPositiveButton("Понятно", null).show();
+                        return;
+                    }
+                    Log.d(TAG, "Регистрация завершена");
                     saveAuthData(response);
 
                     ensureProfileExists(response.user.id, response.user.email, () -> {
@@ -109,6 +124,7 @@ public class LoginActivity extends BaseActivity {
                     runOnUiThread(() -> {
                         binding.progressBar.setVisibility(android.view.View.GONE);
                         binding.btnRegister.setEnabled(true);
+                        showAuthError(msg);
                     });
                 }
             });
@@ -225,4 +241,39 @@ public class LoginActivity extends BaseActivity {
     }
 
 
+    private boolean validateCredentials(String email, String password, boolean registration) {
+        binding.etEmail.setError(null);
+        binding.etPassword.setError(null);
+        boolean valid = true;
+        if (email.isEmpty()) {
+            binding.etEmail.setError("Введите email, например name@example.com"); valid=false;
+        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.etEmail.setError("Нужен email с @ и доменом, например name@example.com"); valid=false;
+        }
+        if (password.isEmpty()) {
+            binding.etPassword.setError("Введите пароль"); valid=false;
+        } else if (registration && password.length()<6) {
+            binding.etPassword.setError("Пароль должен содержать минимум 6 символов"); valid=false;
+        }
+        if (!valid) {
+            if (binding.etEmail.getError()!=null) binding.etEmail.requestFocus();
+            else binding.etPassword.requestFocus();
+        }
+        return valid;
+    }
+    private void showAuthError(String message) {
+        String raw=message==null?"":message;
+        String lower=raw.toLowerCase(java.util.Locale.ROOT);
+        String text;
+        if(lower.contains("weak")||lower.contains("password")) text="Пароль не соответствует требованиям сервера. Минимум 6 символов; сервер может требовать более сложный пароль.";
+        else if(lower.contains("already")||lower.contains("registered")) text="Этот email уже зарегистрирован. Нажмите «Войти».";
+        else if(lower.contains("invalid login")||lower.contains("credentials")) text="Неверный email или пароль.";
+        else if(lower.contains("confirm")) text="Подтвердите email по ссылке из письма перед входом.";
+        else if(lower.contains("rate")||lower.contains("too many")) text="Слишком много попыток. Подождите и попробуйте снова.";
+        else if(lower.contains("email")) text="Сервер не принял email. Проверьте адрес почты.";
+        else if(lower.contains("network")||lower.contains("connect")) text="Нет связи с сервером. Проверьте интернет.";
+        else text=raw.isEmpty()?"Не удалось выполнить запрос. Попробуйте снова.":raw;
+        new androidx.appcompat.app.AlertDialog.Builder(this).setTitle("Не получилось")
+            .setMessage(text).setPositiveButton("Понятно",null).show();
+    }
 }
