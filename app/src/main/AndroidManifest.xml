@@ -1,39 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- для Supabase -->
+    <!--  для Supabase  -->
     <uses-permission android:name="android.permission.INTERNET"/>
-
-    <!-- Уведомления -->
+    <!--  Уведомления  -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-
-    <!-- Точные будильники -->
+    <!--  Точные будильники  -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
-
-    <!-- Пробуждение устройства для напоминаний -->
+    <!--  Пробуждение устройства для напоминаний  -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-
-
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-
-    <application
-        android:allowBackup="true"
-        android:icon="@android:drawable/ic_menu_compass"
-        android:label="@string/app_name"
-        android:theme="@style/Theme.CalorieCounter"
-        android:usesCleartextTraffic="true">
-
-        <activity
-            android:name=".view.LoginActivity"
-            android:exported="true">
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <application android:allowBackup="true" android:icon="@android:drawable/ic_menu_compass" android:label="@string/app_name" android:theme="@style/Theme.CalorieCounter" android:usesCleartextTraffic="true">
+        <activity android:name=".view.LoginActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
+        <activity android:name=".view.TrainingActivity" android:exported="false" android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".view.DietListActivity" android:exported="false"/>
         <activity android:name=".view.DietDetailActivity" android:exported="false"/>
         <activity android:name=".view.ProfileSetupActivity" android:exported="false"/>
@@ -46,22 +31,13 @@
         <activity android:name=".view.RecipeDetailActivity" android:exported="false"/>
         <activity android:name=".view.RecipeAddActivity" android:exported="false"/>
         <activity android:name=".view.DayDetailActivity" android:exported="false"/>
-        <activity
-            android:name=".view.MyRecipeEditorActivity"
-            android:exported="false"
-            android:label="Редактор рецепта"
-            android:parentActivityName=".view.FoodSearchActivity" />
-        <activity android:name=".view.FoodPortionCalculatorActivity" android:exported="false" />
-        <activity android:name=".view.WaterTrackerActivity" android:exported="false" />
-
-        <!--  напоминания воды -->
-        <receiver android:name=".view.WaterReminderReceiver" android:exported="false" />
-
-        <activity
-            android:name=".view.WeightTrackerActivity"
-            android:label="Трекер веса"
-            android:theme="@style/Theme.CalorieCounter"
-            android:windowSoftInputMode="adjustResize" />
-
+        <activity android:name=".view.MyRecipeEditorActivity" android:exported="false" android:label="Редактор рецепта" android:parentActivityName=".view.FoodSearchActivity"/>
+        <activity android:name=".view.FoodPortionCalculatorActivity" android:exported="false"/>
+        <activity android:name=".view.WaterTrackerActivity" android:exported="false"/>
+        <!--   напоминания воды  -->
+        <receiver android:name=".view.WaterReminderReceiver" android:exported="false"/>
+        <activity android:name=".view.WeightTrackerActivity" android:label="Трекер веса" android:theme="@style/Theme.CalorieCounter" android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".view.ActivitySearchActivity" android:exported="false" android:windowSoftInputMode="adjustResize"/>
+        <activity android:name=".view.ActivityEntryActivity" android:exported="false" android:windowSoftInputMode="adjustResize"/>
     </application>
 </manifest>

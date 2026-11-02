@@ -135,4 +135,23 @@ public interface SupabaseApi {
             @Query("id.eq") String id,
             @Body Map<String, Object> updates
     );
+
+    @GET("rest/v1/activity_catalog?select=*&order=name.asc,id.asc&limit=1000")
+    Call<List<com.example.caloriecounter.model.ActivityType>> activityCatalog(@Header("Authorization") String token,@Query("offset") int offset);
+
+    @GET("rest/v1/activity_records?select=*&order=created_at.desc,id.desc&limit=1000")
+    Call<List<com.example.caloriecounter.model.ActivityRecord>> activityRecords(
+            @Header("Authorization") String token,
+            @Query("user_id") String userId,
+            @Query("log_date") String since,@Query("offset") int offset);
+
+    @POST("rest/v1/rpc/record_activity")
+    Call<Void> recordActivity(@Header("Authorization") String token,@Body Map<String,Object> body);
+
+    @POST("rest/v1/rpc/create_personal_activity")
+    Call<Void> createPersonalActivity(@Header("Authorization") String token,@Body Map<String,Object> body);
+
+    @DELETE("rest/v1/activity_records")
+    Call<Void> deleteActivityRecord(@Header("Authorization") String token,@Query("id") String id);
+
 }

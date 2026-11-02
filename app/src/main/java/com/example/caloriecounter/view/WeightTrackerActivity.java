@@ -3,36 +3,55 @@ package com.example.caloriecounter.view;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
-import android.view.View;
-import com.google.android.material.button.MaterialButton;
-import android.widget.EditText;
-import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.InputType;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
-import androidx.lifecycle.ViewModelProvider;
-import com.example.caloriecounter.model.FoodLog;
-import java.util.Map;
-import java.util.TreeMap;
+
 import com.example.caloriecounter.R;
 import com.example.caloriecounter.databinding.ActivityWeightTrackerBinding;
+import com.example.caloriecounter.model.FoodLog;
+import com.example.caloriecounter.model.WeightLog;
 import com.example.caloriecounter.repository.SupabaseRepository;
-import com.example.caloriecounter.utils.ThemeUtils;
 import com.example.caloriecounter.viewmodel.WeightTrackerViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class WeightTrackerActivity extends BaseActivity {
+
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    private static final double MIN_WEIGHT = 20;
+    private static final double MAX_WEIGHT = 300;
+
+    private static final String PERIOD_WEEK = "week";
+    private static final String PERIOD_MONTH = "month";
+    private static final String PERIOD_YEAR = "year";
+
     private ActivityWeightTrackerBinding binding;
-    private boolean caloriesLoaded = false;
     private WeightTrackerViewModel vm;
     private SupabaseRepository repo;
-    private final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    private boolean caloriesLoaded;
+    private boolean caloriesLoading;
+    private boolean caloriesMode;
+
+    private String selectedPeriod = PERIOD_WEEK;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onCreate(Bundle state) {
+        super.onCreate(state);
+
         binding = ActivityWeightTrackerBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -43,183 +62,239 @@ public class WeightTrackerActivity extends BaseActivity {
         vm = new WeightTrackerViewModel(getApplication(), userId);
         repo = new SupabaseRepository(this);
 
+        if (state != null) {
+            caloriesMode = state.getBoolean("calories_mode", false);
+            selectedPeriod = state.getString("period", PERIOD_WEEK);
+
+            String date = state.getString("selected_date");
+            if (date != null) {
+                try {
+                    vm.setSelectedDate(LocalDate.parse(date));
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
         setupUI();
         setupBottomNavigation();
         observeData();
-        loadCaloriesData();
-        vm.loadLogs();
 
+        vm.setPeriod(selectedPeriod);
+        loadCaloriesData();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if (binding != null) {
+        if (binding == null) {
+            return;
+        }
+
+        if (caloriesMode) {
+            showCaloriesMode();
+        } else {
+            showWeightMode();
+        }
+
+        binding.weightChart.invalidate();
+        binding.caloriesChart.invalidate();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBoolean("calories_mode", caloriesMode);
+        outState.putString("period", selectedPeriod);
+        outState.putString("selected_date", vm.getSelectedDate().toString());
+    }
+
+    private void setupUI() {
+        updateDateField(vm.getSelectedDate());
+
+        binding.btnWeightMode.setOnClickListener(v -> showWeightMode());
+        binding.btnCaloriesMode.setOnClickListener(v -> showCaloriesMode());
+
+        binding.btnWeek.setOnClickListener(v -> changePeriod(PERIOD_WEEK));
+        binding.btnMonth.setOnClickListener(v -> changePeriod(PERIOD_MONTH));
+        binding.btnYear.setOnClickListener(v -> changePeriod(PERIOD_YEAR));
+
+        binding.etDate.setOnClickListener(v -> pickDate());
+        binding.btnSaveWeight.setOnClickListener(v -> saveWeightFromInput());
+
+        binding.weightChart.setOnLogLongClickListener(this::showWeightActions);
+
+        if (caloriesMode) {
+            showCaloriesMode();
+        } else {
             showWeightMode();
         }
     }
-    private boolean caloriesMode = false;
 
-    private void setupUI() {
+    private void changePeriod(String period) {
+        selectedPeriod = period;
+        highlightPeriodButton();
 
-        updateDateField(vm.getSelectedDate());
+        if (caloriesMode) {
+            binding.caloriesChart.setPeriod(period);
+        } else {
+            vm.setPeriod(period);
+        }
+    }
 
-        // Переключение графиков
-        binding.btnWeightMode.setOnClickListener(v -> showWeightMode());
+    private void pickDate() {
+        LocalDate current = vm.getSelectedDate();
 
-        binding.btnCaloriesMode.setOnClickListener(v -> showCaloriesMode());
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, year, month, day) -> {
+                    LocalDate picked = LocalDate.of(year, month + 1, day);
 
-        // Выбор периода
+                    if (picked.isAfter(LocalDate.now())) {
+                        toast("Будущие даты недоступны");
+                        return;
+                    }
 
-        binding.btnWeek.setOnClickListener(v -> {
-            highlightBtn(binding.btnWeek);
+                    vm.setSelectedDate(picked);
+                    updateDateField(picked);
+                },
+                current.getYear(),
+                current.getMonthValue() - 1,
+                current.getDayOfMonth()
+        );
 
-            if (caloriesMode) {
-                binding.caloriesChart.setPeriod("week");
-            } else {
-                vm.setPeriod("week");
-            }
-        });
+        dialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        dialog.show();
+    }
 
-        binding.btnMonth.setOnClickListener(v -> {
-            highlightBtn(binding.btnMonth);
+    private double parseWeight(String text) {
+        double value = Double.parseDouble(text.trim().replace(',', '.'));
 
-            if (caloriesMode) {
-                binding.caloriesChart.setPeriod("month");
-            } else {
-                vm.setPeriod("month");
-            }
-        });
+        if (!Double.isFinite(value) || value < MIN_WEIGHT || value > MAX_WEIGHT) {
+            throw new IllegalArgumentException();
+        }
 
-        binding.btnYear.setOnClickListener(v -> {
-            highlightBtn(binding.btnYear);
+        return value;
+    }
 
-            if (caloriesMode) {
-                binding.caloriesChart.setPeriod("year");
-            } else {
-                vm.setPeriod("year");
-            }
-        });
+    private void saveWeightFromInput() {
+        String text = binding.etWeight.getText().toString().trim();
 
-        // Выбор даты
-        binding.etDate.setOnClickListener(v -> {
-            LocalDate d = vm.getSelectedDate();
+        if (text.isEmpty()) {
+            binding.etWeight.setError("Введите вес");
+            return;
+        }
 
-            DatePickerDialog dlg = new DatePickerDialog(this,
-                    (view, y, m, day) -> {
-                        LocalDate picked = LocalDate.of(y, m + 1, day);
+        try {
+            double weight = parseWeight(text);
+            binding.etWeight.setError(null);
+            vm.saveWeight(weight);
+        } catch (Exception ex) {
+            binding.etWeight.setError("Вес должен быть от 20 до 300 кг");
+        }
+    }
 
-                        if (!picked.isAfter(LocalDate.now())) {
-                            vm.setSelectedDate(picked);
-                            updateDateField(picked);
-                        } else {
-                            Toast.makeText(this,
-                                    "Future dates not available",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    },
-                    d.getYear(),
-                    d.getMonthValue() - 1,
-                    d.getDayOfMonth());
+    private void showWeightActions(WeightLog log) {
+        if (log == null) {
+            return;
+        }
 
-            dlg.getDatePicker().setMaxDate(System.currentTimeMillis());
-            dlg.show();
-        });
+        new AlertDialog.Builder(this)
+                .setTitle("Вес за " + log.logDate)
+                .setMessage("Записанный вес: " + log.weight + " кг")
+                .setPositiveButton("Изменить", (dialog, which) -> editWeight(log))
+                .setNegativeButton("Удалить", (dialog, which) -> confirmDeleteWeight(log))
+                .setNeutralButton("Отмена", null)
+                .show();
+    }
 
-        // Сохранение веса
-        binding.btnSaveWeight.setOnClickListener(v -> {
-            String w = binding.etWeight.getText().toString().trim();
+    private void editWeight(WeightLog log) {
+        EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        input.setSingleLine(true);
+        input.setText(String.valueOf(log.weight));
+        input.setSelection(input.getText().length());
 
-            if (w.isEmpty()) {
-                Toast.makeText(this, "Введите вес", Toast.LENGTH_SHORT).show();
-                return;
-            }
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Новый вес, кг")
+                .setView(input)
+                .setPositiveButton("Сохранить", null)
+                .setNegativeButton("Отмена", null)
+                .create();
 
-            try {
-                double weight = Double.parseDouble(w.replace(",", "."));
+        dialog.setOnShowListener(ignored ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                        .setOnClickListener(v -> handleEditWeightSave(dialog, input, log))
+        );
 
-                if (weight < 20 || weight > 300) {
-                    Toast.makeText(this,
-                            "Вес должен быть от 20 до 300 кг",
-                            Toast.LENGTH_SHORT).show();
+        dialog.show();
+    }
+
+    private void handleEditWeightSave(AlertDialog dialog, EditText input, WeightLog log) {
+        double newWeight;
+
+        try {
+            newWeight = parseWeight(input.getText().toString());
+        } catch (Exception ex) {
+            input.setError("Вес должен быть от 20 до 300 кг");
+            return;
+        }
+
+        LocalDate logDate;
+
+        try {
+            logDate = LocalDate.parse(log.logDate);
+        } catch (Exception ex) {
+            toast("Не удалось определить дату записи");
+            return;
+        }
+
+        if (logDate.isAfter(LocalDate.now())) {
+            toast("Будущие даты недоступны");
+            return;
+        }
+
+        vm.setSelectedDate(logDate);
+        updateDateField(logDate);
+        vm.saveWeight(newWeight);
+        dialog.dismiss();
+    }
+
+    private void confirmDeleteWeight(WeightLog log) {
+        new AlertDialog.Builder(this)
+                .setTitle("Удалить запись?")
+                .setMessage(log.logDate + " — " + log.weight + " кг")
+                .setNegativeButton("Отмена", null)
+                .setPositiveButton("Удалить", (dialog, which) -> deleteWeight(log))
+                .show();
+    }
+
+    private void deleteWeight(WeightLog log) {
+        if (log.id == null || log.id.isEmpty()) {
+            toast("Не найден идентификатор записи");
+            return;
+        }
+
+        repo.deleteWeightLog(log.id, new SupabaseRepository.VoidCallback() {
+            @Override
+            public void onSuccess() {
+                if (!alive()) {
                     return;
                 }
 
-                vm.saveWeight(weight);
+                vm.loadLogs();
+                toast("Запись удалена");
+            }
 
-            } catch (NumberFormatException e) {
-                Toast.makeText(this, "Некорректный вес", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onError(String message) {
+                if (alive()) {
+                    toast(message);
+                }
             }
         });
-
-        // Редактирование и удаление веса
-        binding.weightChart.setOnLogLongClickListener(log -> {
-            new AlertDialog.Builder(this)
-                    .setTitle("Вес за " + log.logDate)
-                    .setMessage("Текущий вес: " + log.weight + " кг")
-                    .setPositiveButton("Изменить", (d, w) -> {
-                        EditText input = new EditText(this);
-
-                        input.setInputType(
-                                android.text.InputType.TYPE_CLASS_NUMBER |
-                                        android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
-
-                        input.setText(String.valueOf(log.weight));
-
-                        new AlertDialog.Builder(this)
-                                .setTitle("Новый вес (кг)")
-                                .setView(input)
-                                .setPositiveButton("Сохранить", (d2, w2) -> {
-                                    try {
-                                        double newWeight = Double.parseDouble(
-                                                input.getText().toString().replace(",", "."));
-
-                                        if (newWeight < 20 || newWeight > 300) {
-                                            Toast.makeText(this,
-                                                    "Вес должен быть от 20 до 300 кг",
-                                                    Toast.LENGTH_SHORT).show();
-                                            return;
-                                        }
-
-                                        vm.setSelectedDate(LocalDate.parse(log.logDate));
-                                        vm.saveWeight(newWeight);
-
-                                    } catch (Exception e) {
-                                        Toast.makeText(this,
-                                                "Некорректный вес",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                })
-                                .setNegativeButton("Отмена", null)
-                                .show();
-                    })
-                    .setNegativeButton("Удалить", (d, w) -> {
-                        repo.deleteWeightLog(log.id,
-                                new SupabaseRepository.VoidCallback() {
-                                    @Override
-                                    public void onSuccess() {
-                                        vm.loadLogs();
-                                    }
-
-                                    @Override
-                                    public void onError(String m) {
-                                        Toast.makeText(
-                                                WeightTrackerActivity.this,
-                                                m,
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    })
-                    .setNeutralButton("Отмена", null)
-                    .show();
-        });
-
-        // При открытии показываем вес
-        showWeightMode();
     }
-
-
 
     private void showWeightMode() {
         caloriesMode = false;
@@ -228,16 +303,13 @@ public class WeightTrackerActivity extends BaseActivity {
         binding.caloriesChart.setVisibility(View.GONE);
         binding.weightInputContainer.setVisibility(View.VISIBLE);
 
-        binding.btnWeek.setVisibility(View.VISIBLE);
-        binding.btnMonth.setVisibility(View.VISIBLE);
-        binding.btnYear.setVisibility(View.VISIBLE);
-
-        binding.btnWeek.setText("Неделя");
-        binding.btnMonth.setText("Месяц");
-        binding.btnYear.setText("Год");
-
+        showPeriodButtons();
         highlightModeButton(binding.btnWeightMode);
-        highlightBtn(binding.btnWeek);
+        highlightPeriodButton();
+
+        if (!selectedPeriod.equals(vm.getCurrentPeriod())) {
+            vm.setPeriod(selectedPeriod);
+        }
     }
 
     private void showCaloriesMode() {
@@ -247,6 +319,18 @@ public class WeightTrackerActivity extends BaseActivity {
         binding.caloriesChart.setVisibility(View.VISIBLE);
         binding.weightInputContainer.setVisibility(View.GONE);
 
+        showPeriodButtons();
+        binding.caloriesChart.setPeriod(selectedPeriod);
+
+        highlightModeButton(binding.btnCaloriesMode);
+        highlightPeriodButton();
+
+        if (!caloriesLoaded && !caloriesLoading) {
+            loadCaloriesData();
+        }
+    }
+
+    private void showPeriodButtons() {
         binding.btnWeek.setVisibility(View.VISIBLE);
         binding.btnMonth.setVisibility(View.VISIBLE);
         binding.btnYear.setVisibility(View.VISIBLE);
@@ -254,134 +338,112 @@ public class WeightTrackerActivity extends BaseActivity {
         binding.btnWeek.setText("Неделя");
         binding.btnMonth.setText("Месяц");
         binding.btnYear.setText("Год");
-
-        binding.caloriesChart.setPeriod("week");
-
-        highlightModeButton(binding.btnCaloriesMode);
-        highlightBtn(binding.btnWeek);
-
-        if (!caloriesLoaded) {
-            loadCaloriesData();
-        }
     }
 
     private void highlightModeButton(MaterialButton active) {
-        MaterialButton weight = binding.btnWeightMode;
-        MaterialButton calories = binding.btnCaloriesMode;
+        styleButton(binding.btnWeightMode, active == binding.btnWeightMode);
+        styleButton(binding.btnCaloriesMode, active == binding.btnCaloriesMode);
+    }
 
-        int activeColor = android.graphics.Color.parseColor("#7563F6");
-        int inactiveColor = android.graphics.Color.parseColor("#F0EFF7");
-        int activeText = android.graphics.Color.WHITE;
-        int inactiveText = android.graphics.Color.parseColor("#777B8D");
+    private void highlightPeriodButton() {
+        styleButton(binding.btnWeek, PERIOD_WEEK.equals(selectedPeriod));
+        styleButton(binding.btnMonth, PERIOD_MONTH.equals(selectedPeriod));
+        styleButton(binding.btnYear, PERIOD_YEAR.equals(selectedPeriod));
+    }
 
-        weight.setCheckable(false);
-        calories.setCheckable(false);
+    private void styleButton(MaterialButton button, boolean selected) {
+        int accent = ActivityPalette.accent(this);
 
-        weight.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        active == weight ? activeColor : inactiveColor
-                )
-        );
-
-        calories.setBackgroundTintList(
-                android.content.res.ColorStateList.valueOf(
-                        active == calories ? activeColor : inactiveColor
-                )
-        );
-
-        weight.setTextColor(active == weight ? activeText : inactiveText);
-        calories.setTextColor(active == calories ? activeText : inactiveText);
+        button.setCheckable(false);
+        button.setBackgroundTintList(ColorStateList.valueOf(
+                selected ? accent : ActivityPalette.surface(this)));
+        button.setStrokeColor(ColorStateList.valueOf(accent));
+        button.setTextColor(selected
+                ? ActivityPalette.onAccent(this)
+                : ActivityPalette.muted(this));
     }
 
     private void observeData() {
         vm.getLogs().observe(this, binding.weightChart::setData);
-        vm.isLoading().observe(this, l -> binding.progressBar.setVisibility(l ? View.VISIBLE : View.GONE));
-        vm.getError().observe(this, e -> {
-            if(e != null) Toast.makeText(this, e, Toast.LENGTH_LONG).show();
+
+        vm.isLoading().observe(this, loading ->
+                binding.progressBar.setVisibility(
+                        Boolean.TRUE.equals(loading) || caloriesLoading
+                                ? View.VISIBLE
+                                : View.GONE));
+
+        vm.getError().observe(this, error -> {
+            if (error != null && !error.isEmpty()) {
+                toast(error);
+            }
         });
-        vm.getSaveSuccess().observe(this, s -> {
-            if (s) {
+
+        vm.getSaveSuccess().observe(this, success -> {
+            if (Boolean.TRUE.equals(success)) {
                 binding.etWeight.setText("");
             }
         });
     }
 
     private void setupBottomNavigation() {
-        BottomNavigationView bottomNav = binding.bottomNavigation;
-        bottomNav.setSelectedItemId(R.id.nav_weight);
+        BottomNavigationView nav = binding.bottomNavigation;
+        nav.setSelectedItemId(R.id.nav_weight);
 
-        bottomNav.setOnItemSelectedListener(item -> {
+        nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.nav_weight) {
                 return true;
-            } else if (id == R.id.nav_food) {
-                startActivity(new Intent(this, MainActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            } else if (id == R.id.nav_diets) {
-                startActivity(new Intent(this, DietListActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
-            } else if (id == R.id.nav_water) {
-                startActivity(new Intent(this, WaterTrackerActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                return true;
             }
+
+            Class<?> target;
+
+            if (id == R.id.nav_training) {
+                target = TrainingActivity.class;
+            } else if (id == R.id.nav_food) {
+                target = MainActivity.class;
+            } else if (id == R.id.nav_diets) {
+                target = DietListActivity.class;
+            } else if (id == R.id.nav_water) {
+                target = WaterTrackerActivity.class;
+            } else {
+                return false;
+            }
+
+            startActivity(new Intent(this, target));
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             return false;
         });
     }
 
-    private void updateDateField(LocalDate d) {
-        binding.etDate.setText(d.format(dtf));
+    private void updateDateField(LocalDate date) {
+        binding.etDate.setText(date.format(DATE_FORMAT));
     }
-
-    private void highlightBtn(MaterialButton active) {
-        String accent = ThemeUtils.getAccent(this);
-        int accentColor = android.graphics.Color.parseColor(accent);
-        int grayColor = android.graphics.Color.parseColor("#E0E0E0");
-        int inactiveText = android.graphics.Color.parseColor("#777B8D");
-
-        MaterialButton[] buttons = {
-                binding.btnWeek,
-                binding.btnMonth,
-                binding.btnYear
-        };
-
-        for (MaterialButton button : buttons) {
-            boolean selected = button == active;
-
-            button.setBackgroundTintList(
-                    android.content.res.ColorStateList.valueOf(
-                            selected ? accentColor : grayColor
-                    )
-            );
-
-            button.setTextColor(
-                    selected
-                            ? android.graphics.Color.WHITE
-                            : inactiveText
-            );
-        }
-    }
-
 
     private void loadCaloriesData() {
+        if (caloriesLoading) {
+            return;
+        }
+
+        caloriesLoading = true;
         binding.progressBar.setVisibility(View.VISIBLE);
 
         repo.fetchAllFoodLogs(new SupabaseRepository.LogListCallback() {
             @Override
-            public void onSuccess(java.util.List<FoodLog> logs) {
+            public void onSuccess(List<FoodLog> logs) {
+                if (!alive()) {
+                    return;
+                }
+
                 Map<String, Integer> dailyCalories = new TreeMap<>();
 
                 if (logs != null) {
                     for (FoodLog log : logs) {
-                        if (log == null ||
-                                log.logDate == null ||
-                                log.logDate.isEmpty()) {
+                        if (log == null
+                                || log.logDate == null
+                                || log.logDate.trim().isEmpty()) {
                             continue;
                         }
-
-                        int calories = Math.max(0, log.totalCalories);
 
                         String date = log.logDate.trim();
 
@@ -392,30 +454,50 @@ public class WeightTrackerActivity extends BaseActivity {
                         try {
                             LocalDate.parse(date);
 
-                            if (calories > 0) {
-                                dailyCalories.merge(date, calories, Integer::sum);
-                            }
+                            dailyCalories.merge(
+                                    date,
+                                    Math.max(0, log.totalCalories),
+                                    Integer::sum);
                         } catch (Exception ignored) {
-                            // Некорректную дату пропускаем
                         }
                     }
                 }
 
                 binding.caloriesChart.setData(dailyCalories);
+                binding.caloriesChart.setPeriod(selectedPeriod);
+
                 caloriesLoaded = true;
-                binding.progressBar.setVisibility(View.GONE);
+                caloriesLoading = false;
+                updateLoadingIndicator();
             }
 
             @Override
             public void onError(String message) {
-                binding.progressBar.setVisibility(View.GONE);
+                if (!alive()) {
+                    return;
+                }
 
-                Toast.makeText(
-                        WeightTrackerActivity.this,
-                        "Не удалось загрузить калории: " + message,
-                        Toast.LENGTH_LONG
-                ).show();
+                caloriesLoading = false;
+                updateLoadingIndicator();
+                toast("Не удалось загрузить калории: " + message);
             }
         });
+    }
+
+    private void updateLoadingIndicator() {
+        boolean weightLoading = Boolean.TRUE.equals(vm.isLoading().getValue());
+
+        binding.progressBar.setVisibility(
+                caloriesLoading || weightLoading
+                        ? View.VISIBLE
+                        : View.GONE);
+    }
+
+    private boolean alive() {
+        return !isFinishing() && !isDestroyed();
+    }
+
+    private void toast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 }

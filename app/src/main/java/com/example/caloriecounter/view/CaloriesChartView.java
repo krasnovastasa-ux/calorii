@@ -1,4 +1,3 @@
-
 package com.example.caloriecounter.view;
 
 import android.content.Context;
@@ -7,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,6 +20,24 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class CaloriesChartView extends View {
+
+    private static final String PERIOD_WEEK = "week";
+    private static final String PERIOD_MONTH = "month";
+    private static final String PERIOD_YEAR = "year";
+
+    private static final DateTimeFormatter LABEL_FORMAT = DateTimeFormatter.ofPattern("dd.MM");
+    private static final DateTimeFormatter FULL_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private static final DateTimeFormatter MONTH_FORMAT = DateTimeFormatter.ofPattern("MM.yy");
+
+    private static final int GRID_STEPS = 5;
+    private static final int MONTHS_IN_YEAR = 12;
+    private static final float POINT_RADIUS_OUTER = 8f;
+    private static final float POINT_RADIUS_INNER = 4f;
+    private static final float TOOLTIP_HEIGHT = 48f;
+    private static final float TOOLTIP_PADDING = 32f;
+    private static final float TOOLTIP_MIN_WIDTH = 110f;
+    private static final float TOOLTIP_OFFSET_Y = 65f;
+    private static final int Y_STEP = 500;
 
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint pointPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -41,9 +59,9 @@ public class CaloriesChartView extends View {
     private final List<Float> pointsX = new ArrayList<>();
     private final List<Float> pointsY = new ArrayList<>();
 
-    private String period = "week";
+    private String period = PERIOD_WEEK;
 
-    private boolean showTooltip = false;
+    private boolean showTooltip;
     private int selectedIndex = -1;
 
     private float tooltipX;
@@ -67,34 +85,27 @@ public class CaloriesChartView extends View {
     }
 
     private void init() {
-        linePaint.setColor(Color.parseColor("#7563F6"));
         linePaint.setStrokeWidth(4f);
         linePaint.setStyle(Paint.Style.STROKE);
         linePaint.setStrokeCap(Paint.Cap.ROUND);
         linePaint.setStrokeJoin(Paint.Join.ROUND);
 
-        pointPaint.setColor(Color.parseColor("#7563F6"));
         pointPaint.setStyle(Paint.Style.FILL);
 
-        innerPointPaint.setColor(Color.WHITE);
         innerPointPaint.setStyle(Paint.Style.FILL);
 
         gridPaint.setColor(0x30888888);
         gridPaint.setStrokeWidth(1f);
 
-        textPaint.setColor(Color.GRAY);
         textPaint.setTextSize(28f);
         textPaint.setTextAlign(Paint.Align.RIGHT);
 
-        titlePaint.setColor(Color.parseColor("#25273A"));
         titlePaint.setTextSize(36f);
-        titlePaint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        titlePaint.setTypeface(Typeface.DEFAULT_BOLD);
 
-        // Полупрозрачный фон подсказки
         tooltipPaint.setColor(0xB3000000);
         tooltipPaint.setStyle(Paint.Style.FILL);
 
-        tooltipTextPaint.setColor(Color.WHITE);
         tooltipTextPaint.setTextSize(25f);
         tooltipTextPaint.setTextAlign(Paint.Align.CENTER);
 
@@ -109,7 +120,6 @@ public class CaloriesChartView extends View {
                 if (entry.getKey() != null
                         && entry.getValue() != null
                         && entry.getValue() > 0) {
-
                     data.put(entry.getKey(), entry.getValue());
                 }
             }
@@ -123,11 +133,9 @@ public class CaloriesChartView extends View {
     }
 
     public void setPeriod(String newPeriod) {
-        if (newPeriod == null) return;
-
-        if (!newPeriod.equals("week")
-                && !newPeriod.equals("month")
-                && !newPeriod.equals("year")) {
+        if (!PERIOD_WEEK.equals(newPeriod)
+                && !PERIOD_MONTH.equals(newPeriod)
+                && !PERIOD_YEAR.equals(newPeriod)) {
             return;
         }
 
@@ -145,73 +153,12 @@ public class CaloriesChartView extends View {
         labels.clear();
         fullDates.clear();
 
-        DateTimeFormatter labelFormatter =
-                DateTimeFormatter.ofPattern("dd.MM");
-
-        DateTimeFormatter fullFormatter =
-                DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
         LocalDate today = LocalDate.now();
 
-        if (period.equals("year")) {
-
-            YearMonth currentMonth = YearMonth.from(today);
-
-            Map<YearMonth, Integer> monthlyData = new TreeMap<>();
-
-            for (Map.Entry<String, Integer> entry : data.entrySet()) {
-                try {
-                    LocalDate date = LocalDate.parse(entry.getKey());
-                    YearMonth month = YearMonth.from(date);
-
-                    YearMonth firstMonth = currentMonth.minusMonths(11);
-
-                    if (!month.isBefore(firstMonth)
-                            && !month.isAfter(currentMonth)) {
-
-                        monthlyData.put(
-                                month,
-                                monthlyData.getOrDefault(month, 0)
-                                        + entry.getValue()
-                        );
-                    }
-
-                } catch (Exception ignored) {
-                }
-            }
-
-            for (int i = 11; i >= 0; i--) {
-                YearMonth month = currentMonth.minusMonths(i);
-
-                Integer calories = monthlyData.get(month);
-
-                if (calories != null && calories > 0) {
-                    values.add(calories);
-                    labels.add(month.format(
-                            DateTimeFormatter.ofPattern("MM.yy")
-                    ));
-                    fullDates.add(month.toString());
-                }
-            }
-
+        if (PERIOD_YEAR.equals(period)) {
+            rebuildYearPoints(today);
         } else {
-
-            int days = period.equals("week") ? 7 : 30;
-
-            LocalDate startDate = today.minusDays(days - 1);
-
-            for (int i = 0; i < days; i++) {
-                LocalDate date = startDate.plusDays(i);
-
-                String dateKey = date.toString();
-                Integer calories = data.get(dateKey);
-
-                if (calories != null && calories > 0) {
-                    values.add(calories);
-                    labels.add(date.format(labelFormatter));
-                    fullDates.add(date.format(fullFormatter));
-                }
-            }
+            rebuildDayPoints(today);
         }
 
         pointsX.clear();
@@ -224,109 +171,103 @@ public class CaloriesChartView extends View {
         invalidate();
     }
 
+    private void rebuildYearPoints(LocalDate today) {
+        YearMonth currentMonth = YearMonth.from(today);
+        YearMonth firstMonth = currentMonth.minusMonths(MONTHS_IN_YEAR - 1);
+
+        Map<YearMonth, Integer> monthlyData = new TreeMap<>();
+
+        for (Map.Entry<String, Integer> entry : data.entrySet()) {
+            try {
+                LocalDate date = LocalDate.parse(entry.getKey());
+                YearMonth month = YearMonth.from(date);
+
+                if (!month.isBefore(firstMonth) && !month.isAfter(currentMonth)) {
+                    monthlyData.merge(month, entry.getValue(), Integer::sum);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        for (int i = MONTHS_IN_YEAR - 1; i >= 0; i--) {
+            YearMonth month = currentMonth.minusMonths(i);
+            Integer calories = monthlyData.get(month);
+
+            if (calories != null && calories > 0) {
+                values.add(calories);
+                labels.add(month.format(MONTH_FORMAT));
+                fullDates.add(month.toString());
+            }
+        }
+    }
+
+    private void rebuildDayPoints(LocalDate today) {
+        int days = PERIOD_WEEK.equals(period) ? 7 : 30;
+        LocalDate startDate = today.minusDays(days - 1);
+
+        for (int i = 0; i < days; i++) {
+            LocalDate date = startDate.plusDays(i);
+            Integer calories = data.get(date.toString());
+
+            if (calories != null && calories > 0) {
+                values.add(calories);
+                labels.add(date.format(LABEL_FORMAT));
+                fullDates.add(date.format(FULL_FORMAT));
+            }
+        }
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
-        // Больше места слева для четырёхзначных чисел
         float padLeft = 95f;
-
         float padRight = 20f;
-
-        // Дополнительное расстояние после заголовка
         float padTop = 95f;
-
         float padBottom = 35f;
 
-        chartBounds.set(
-                padLeft,
-                padTop,
-                w - padRight,
-                h - padBottom
-        );
+        chartBounds.set(padLeft, padTop, w - padRight, h - padBottom);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // Заголовок графика
+        applyPalette();
+
         titlePaint.setTextSize(36f);
-        canvas.drawText(
-                "График калорий",
-                chartBounds.left,
-                43f,
-                titlePaint
-        );
+        canvas.drawText("График калорий", chartBounds.left, 43f, titlePaint);
 
         if (values.isEmpty()) {
             textPaint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(
-                    "Нет данных о калориях",
-                    getWidth() / 2f,
-                    getHeight() / 2f,
-                    textPaint
-            );
+            canvas.drawText("Нет данных о калориях", getWidth() / 2f, getHeight() / 2f, textPaint);
             textPaint.setTextAlign(Paint.Align.RIGHT);
             return;
         }
 
         int maxValue = 0;
-
         for (int value : values) {
             maxValue = Math.max(maxValue, value);
         }
-
-        int maxY = Math.max(500, ((maxValue + 499) / 500) * 500);
+        int maxY = Math.max(Y_STEP, ((maxValue + Y_STEP - 1) / Y_STEP) * Y_STEP);
 
         float chartHeight = chartBounds.height();
         float chartWidth = chartBounds.width();
 
-        // Горизонтальная сетка и подписи слева
-        for (int i = 0; i <= 5; i++) {
-            float y = chartBounds.bottom
-                    - (chartHeight / 5f) * i;
-
-            canvas.drawLine(
-                    chartBounds.left,
-                    y,
-                    chartBounds.right,
-                    y,
-                    gridPaint
-            );
-
-            int labelValue = maxY * i / 5;
-
-            textPaint.setTextAlign(Paint.Align.RIGHT);
-
-            canvas.drawText(
-                    String.valueOf(labelValue),
-                    chartBounds.left - 12f,
-                    y + 9f,
-                    textPaint
-            );
-        }
+        drawGrid(canvas, maxY, chartHeight);
 
         pointsX.clear();
         pointsY.clear();
 
         int count = values.size();
-
         Path path = new Path();
 
         for (int i = 0; i < count; i++) {
+            float x = count == 1
+                    ? chartBounds.left + chartWidth / 2f
+                    : chartBounds.left + chartWidth * i / (count - 1f);
 
-            float x;
-
-            if (count == 1) {
-                x = chartBounds.left + chartWidth / 2f;
-            } else {
-                x = chartBounds.left
-                        + chartWidth * i / (count - 1f);
-            }
-
-            float y = chartBounds.bottom
-                    - (values.get(i) / (float) maxY) * chartHeight;
+            float y = chartBounds.bottom - (values.get(i) / (float) maxY) * chartHeight;
 
             pointsX.add(x);
             pointsY.add(y);
@@ -338,150 +279,139 @@ public class CaloriesChartView extends View {
             }
         }
 
-        // Линия графика
         canvas.drawPath(path, linePaint);
+        drawPoints(canvas, count);
+        drawDateLabels(canvas, count);
 
-        // Точки графика
+        textPaint.setTextAlign(Paint.Align.RIGHT);
+
+        if (showTooltip && selectedIndex >= 0 && selectedIndex < values.size()) {
+            tooltipText = values.get(selectedIndex) + " ккал";
+            drawTooltip(canvas);
+        }
+    }
+
+    private void applyPalette() {
+        linePaint.setColor(ActivityPalette.accent(getContext()));
+        pointPaint.setColor(ActivityPalette.accent(getContext()));
+        innerPointPaint.setColor(ActivityPalette.surface(getContext()));
+        titlePaint.setColor(ActivityPalette.text(getContext()));
+        textPaint.setColor(ActivityPalette.muted(getContext()));
+    }
+
+    private void drawGrid(Canvas canvas, int maxY, float chartHeight) {
+        textPaint.setTextAlign(Paint.Align.RIGHT);
+
+        for (int i = 0; i <= GRID_STEPS; i++) {
+            float y = chartBounds.bottom - (chartHeight / GRID_STEPS) * i;
+
+            canvas.drawLine(chartBounds.left, y, chartBounds.right, y, gridPaint);
+
+            int labelValue = maxY * i / GRID_STEPS;
+            canvas.drawText(
+                    String.valueOf(labelValue),
+                    chartBounds.left - 12f,
+                    y + 9f,
+                    textPaint);
+        }
+    }
+
+    private void drawPoints(Canvas canvas, int count) {
         for (int i = 0; i < count; i++) {
             float x = pointsX.get(i);
             float y = pointsY.get(i);
 
-            canvas.drawCircle(x, y, 8f, pointPaint);
-            canvas.drawCircle(x, y, 4f, innerPointPaint);
+            canvas.drawCircle(x, y, POINT_RADIUS_OUTER, pointPaint);
+            canvas.drawCircle(x, y, POINT_RADIUS_INNER, innerPointPaint);
         }
+    }
 
-        // Подписи дат снизу
+    private void drawDateLabels(Canvas canvas, int count) {
         textPaint.setTextAlign(Paint.Align.CENTER);
 
         for (int i = 0; i < count; i++) {
-            float x = pointsX.get(i);
-
             canvas.drawText(
                     labels.get(i),
-                    x,
+                    pointsX.get(i),
                     chartBounds.bottom + 25f,
-                    textPaint
-            );
+                    textPaint);
         }
+    }
 
-        textPaint.setTextAlign(Paint.Align.RIGHT);
+    private void drawTooltip(Canvas canvas) {
+        float textWidth = tooltipTextPaint.measureText(tooltipText);
+        float tooltipWidth = Math.max(TOOLTIP_MIN_WIDTH, textWidth + TOOLTIP_PADDING);
 
-        // Подсказка выбранной точки
-        if (showTooltip && selectedIndex >= 0
-                && selectedIndex < values.size()) {
+        float tooltipLeft = Math.max(
+                8f,
+                Math.min(tooltipX - tooltipWidth / 2f, getWidth() - tooltipWidth - 8f));
 
-            tooltipText = values.get(selectedIndex) + " ккал";
+        float tooltipTop = Math.max(
+                8f,
+                Math.min(tooltipY - TOOLTIP_OFFSET_Y, getHeight() - TOOLTIP_HEIGHT - 8f));
 
-            float textWidth = tooltipTextPaint.measureText(tooltipText);
+        RectF tooltipRect = new RectF(
+                tooltipLeft,
+                tooltipTop,
+                tooltipLeft + tooltipWidth,
+                tooltipTop + TOOLTIP_HEIGHT);
 
-            float tooltipWidth = Math.max(110f, textWidth + 32f);
-            float tooltipHeight = 48f;
+        canvas.drawRoundRect(tooltipRect, 12f, 12f, tooltipPaint);
 
-            // Не даём подсказке выйти за левую или правую границу
-            float tooltipLeft = Math.max(
-                    8f,
-                    Math.min(
-                            tooltipX - tooltipWidth / 2f,
-                            getWidth() - tooltipWidth - 8f
-                    )
-            );
-
-            float tooltipRight = tooltipLeft + tooltipWidth;
-
-            // Не даём подсказке выйти за верхнюю или нижнюю границу
-            float tooltipTop = Math.max(
-                    8f,
-                    Math.min(
-                            tooltipY - 65f,
-                            getHeight() - tooltipHeight - 8f
-                    )
-            );
-
-            float tooltipBottom = tooltipTop + tooltipHeight;
-
-            RectF tooltipRect = new RectF(
-                    tooltipLeft,
-                    tooltipTop,
-                    tooltipRight,
-                    tooltipBottom
-            );
-
-            canvas.drawRoundRect(
-                    tooltipRect,
-                    12f,
-                    12f,
-                    tooltipPaint
-            );
-
-            canvas.drawText(
-                    tooltipText,
-                    tooltipLeft + tooltipWidth / 2f,
-                    tooltipTop + 32f,
-                    tooltipTextPaint
-            );
-        }
+        canvas.drawText(
+                tooltipText,
+                tooltipLeft + tooltipWidth / 2f,
+                tooltipTop + 32f,
+                tooltipTextPaint);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
-
                 if (pointsX.isEmpty()) {
                     return true;
                 }
-
-                float touchX = event.getX();
-
-                int nearestIndex = 0;
-                float minDistance = Float.MAX_VALUE;
-
-                for (int i = 0; i < pointsX.size(); i++) {
-                    float distance = Math.abs(pointsX.get(i) - touchX);
-
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        nearestIndex = i;
-                    }
-                }
-
-                selectedIndex = nearestIndex;
-
-                tooltipX = pointsX.get(nearestIndex);
-                tooltipY = pointsY.get(nearestIndex);
-
-                tooltipText = values.get(nearestIndex) + " ккал";
-
-                showTooltip = true;
-
-                invalidate();
-
+                handleTouchDown(event.getX());
                 return true;
 
             case MotionEvent.ACTION_UP:
-
                 showTooltip = false;
                 selectedIndex = -1;
-
                 invalidate();
-
                 performClick();
-
                 return true;
 
             case MotionEvent.ACTION_CANCEL:
-
                 showTooltip = false;
                 selectedIndex = -1;
-
                 invalidate();
-
                 return true;
         }
 
         return true;
+    }
+
+    private void handleTouchDown(float touchX) {
+        int nearestIndex = 0;
+        float minDistance = Float.MAX_VALUE;
+
+        for (int i = 0; i < pointsX.size(); i++) {
+            float distance = Math.abs(pointsX.get(i) - touchX);
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestIndex = i;
+            }
+        }
+
+        selectedIndex = nearestIndex;
+        tooltipX = pointsX.get(nearestIndex);
+        tooltipY = pointsY.get(nearestIndex);
+        tooltipText = values.get(nearestIndex) + " ккал";
+        showTooltip = true;
+
+        invalidate();
     }
 
     @Override

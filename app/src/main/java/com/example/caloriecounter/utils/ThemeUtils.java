@@ -1,30 +1,41 @@
 package com.example.caloriecounter.utils;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
+
+import com.example.caloriecounter.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputLayout;
-import com.example.caloriecounter.R;
 
 public class ThemeUtils {
-    private static final int ORIGINAL_PRIMARY = Color.parseColor("#6C63FF");
 
-    public static String getAccent(Context ctx) {
-        return PreferenceManager.getDefaultSharedPreferences(ctx).getString("accent_color", "#6C63FF");
+    private static final String ACCENT_DEFAULT = "#6C63FF";
+    private static final String HINT_COLOR_INACTIVE = "#757575";
+    private static final String TAB_TEXT_INACTIVE = "#6B7280";
+    private static final String STROKE_COLOR_INACTIVE = "#000000";
+
+    private ThemeUtils() {
+    }
+
+    public static String getAccent(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getString("accent_color", ACCENT_DEFAULT);
     }
 
     public static void applyAccent(View root, String accentHex) {
-        if (root == null) return;
+        if (root == null) {
+            return;
+        }
         try {
             int color = Color.parseColor(accentHex);
             applyToView(root, color);
@@ -34,64 +45,31 @@ public class ThemeUtils {
                     applyAccent(group.getChildAt(i), accentHex);
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private static void applyToView(View view, int color) {
-        if (view == null) return;
-        Object tag = view.getTag();
-
-        if (tag != null && "accent".equals(tag) && view instanceof TextView && !(view instanceof MaterialButton)) {
-            ((TextView) view).setTextColor(color);
+        if (view == null) {
+            return;
         }
 
-        if (tag != null && "accent_circle".equals(tag) && view instanceof TextView) {
-            view.setBackgroundResource(R.drawable.circle_selected);
-            ((TextView) view).setTextColor(Color.WHITE);
-            if (view.getBackground() instanceof GradientDrawable) {
-                ((GradientDrawable) view.getBackground()).setColor(color);
-            }
+        Object tag = view.getTag();
+        if (tag != null) {
+            applyTag(view, tag, color);
         }
 
         if (view instanceof MaterialButton) {
-            MaterialButton btn = (MaterialButton) view;
-            if (btn.getId() != R.id.btnLogout) {
-                btn.setBackgroundTintList(ColorStateList.valueOf(color));
-                btn.setStrokeColor(ColorStateList.valueOf(color));
-                boolean dark = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) < 186;
-                btn.setTextColor(Color.WHITE);;
-            }
+            applyMaterialButton((MaterialButton) view, color);
         }
 
         if (view instanceof TextInputLayout) {
-            TextInputLayout til = (TextInputLayout) view;
-
-            int[][] strokeStates = new int[][] {
-                    new int[] { android.R.attr.state_focused },
-                    new int[] {}
-            };
-            int[] strokeColors = new int[] {
-                    color,
-                    Color.parseColor("#000000")
-            };
-            til.setBoxStrokeColorStateList(new ColorStateList(strokeStates, strokeColors));
-
-            int[][] hintStates = new int[][] {
-                    new int[] { android.R.attr.state_focused },
-                    new int[] {}
-            };
-            int[] hintColors = new int[] {
-                    color,
-                    Color.parseColor("#757575")
-            };
-            ColorStateList hintColorList = new ColorStateList(hintStates, hintColors);
-            til.setHintTextColor(hintColorList);
-            til.setDefaultHintTextColor(hintColorList);
+            applyTextInputLayout((TextInputLayout) view, color);
         }
 
         if (view instanceof TabLayout) {
             TabLayout tabs = (TabLayout) view;
-            tabs.setTabTextColors(Color.parseColor("#6B7280"), color);
+            tabs.setTabTextColors(Color.parseColor(TAB_TEXT_INACTIVE), color);
             tabs.setSelectedTabIndicatorColor(color);
         }
 
@@ -100,8 +78,58 @@ public class ThemeUtils {
         }
 
         if (view instanceof BottomNavigationView) {
-            ((BottomNavigationView) view).setItemIconTintList(ColorStateList.valueOf(color));
-            ((BottomNavigationView) view).setItemTextColor(ColorStateList.valueOf(color));
+            BottomNavigationView nav = (BottomNavigationView) view;
+            nav.setItemIconTintList(ColorStateList.valueOf(color));
+            nav.setItemTextColor(ColorStateList.valueOf(color));
         }
+    }
+
+    private static void applyTag(View view, Object tag, int color) {
+        if ("accent".equals(tag) && view instanceof TextView && !(view instanceof MaterialButton)) {
+            ((TextView) view).setTextColor(color);
+        }
+
+        if ("accent_circle".equals(tag) && view instanceof TextView) {
+            view.setBackgroundResource(R.drawable.circle_selected);
+            ((TextView) view).setTextColor(Color.WHITE);
+            if (view.getBackground() instanceof GradientDrawable) {
+                ((GradientDrawable) view.getBackground()).setColor(color);
+            }
+        }
+
+        if ("accent_icon".equals(tag) && view instanceof ImageView) {
+            ((ImageView) view).setImageTintList(ColorStateList.valueOf(color));
+        }
+    }
+
+    private static void applyMaterialButton(MaterialButton button, int color) {
+        if (button.getId() == R.id.btnLogout) {
+            return;
+        }
+
+        button.setBackgroundTintList(ColorStateList.valueOf(color));
+        button.setStrokeColor(ColorStateList.valueOf(color));
+        button.setTextColor(Color.WHITE);
+    }
+
+    private static void applyTextInputLayout(TextInputLayout layout, int color) {
+        int[][] states = new int[][]{
+                new int[]{android.R.attr.state_focused},
+                new int[]{}
+        };
+
+        int[] strokeColors = new int[]{
+                color,
+                Color.parseColor(STROKE_COLOR_INACTIVE)
+        };
+        layout.setBoxStrokeColorStateList(new ColorStateList(states, strokeColors));
+
+        int[] hintColors = new int[]{
+                color,
+                Color.parseColor(HINT_COLOR_INACTIVE)
+        };
+        ColorStateList hintColorList = new ColorStateList(states, hintColors);
+        layout.setHintTextColor(hintColorList);
+        layout.setDefaultHintTextColor(hintColorList);
     }
 }
